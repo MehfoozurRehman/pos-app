@@ -285,6 +285,42 @@ function OrderCard() {
 function OrderDetails() {
   const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
 
+  // Mock order/cart data
+  const order = {
+    customerName: 'Hussnain',
+    customerPhone: '0300-1234567',
+    items: [
+      {
+        id: 1,
+        name: 'Intel Core i7 12700K Processor',
+        barcode: '1234567890',
+        price: 350,
+        discount: 20,
+      },
+      {
+        id: 2,
+        name: 'Corsair Vengeance 32GB DDR5 RAM',
+        barcode: '9876543210',
+        price: 180,
+        discount: 0,
+      },
+    ],
+    discount: 10, // order-level discount
+  };
+
+  const handleRemoveItem = (id: number) => {
+    // TODO: Implement remove item logic (state management)
+    alert('Remove item ' + id);
+  };
+
+  const handleClearCart = () => {
+    // TODO: Implement clear cart logic
+    alert('Cart cleared');
+  };
+
+  const subtotal = order.items.reduce((sum, item) => sum + (item.price - (item.discount || 0)), 0);
+  const total = subtotal - (order.discount || 0);
+
   return (
     <>
       {!cartVisible && (
@@ -295,12 +331,58 @@ function OrderDetails() {
       )}
       <AnimatePresence>
         {cartVisible && (
-          <motion.div className="flex flex-col w-full max-w-[400px] p-4">
+          <motion.div className="flex flex-col w-full max-w-[400px] p-4 bg-background/90 rounded-lg shadow-lg border h-full">
             <div className="flex items-center justify-between mb-4">
-              Order Details
+              <span className="font-bold text-lg">Order Details</span>
               <Button variant="outline" onClick={() => setCartVisible(false)}>
                 <EyeIcon />
               </Button>
+            </div>
+            <div className="mb-2">
+              <div className="font-semibold">Customer</div>
+              <div className="text-sm text-muted-foreground">{order.customerName} ({order.customerPhone})</div>
+            </div>
+            <div className="flex-1 overflow-y-auto mb-4">
+              <div className="font-semibold mb-2">Items</div>
+              <div className="flex flex-col gap-2">
+                {order.items.map((item) => (
+                  <Card key={item.id} className="flex items-center justify-between p-2 bg-card/60">
+                    <div>
+                      <div className="font-medium text-sm">{item.name}</div>
+                      <div className="text-xs text-muted-foreground">Barcode: {item.barcode}</div>
+                      {item.discount ? (
+                        <div className="text-xs text-green-600">Discount: Rs. {item.discount}</div>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="font-semibold">Rs. {item.price - (item.discount || 0)}</span>
+                      <Button size="icon" variant="ghost" onClick={() => handleRemoveItem(item.id)} title="Remove">
+                        ×
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+            <div className="border-t pt-3 mb-2">
+              <div className="flex justify-between text-sm mb-1">
+                <span>Subtotal</span>
+                <span>Rs. {subtotal}</span>
+              </div>
+              {order.discount ? (
+                <div className="flex justify-between text-sm mb-1 text-green-700">
+                  <span>Order Discount</span>
+                  <span>- Rs. {order.discount}</span>
+                </div>
+              ) : null}
+              <div className="flex justify-between font-bold text-base">
+                <span>Total</span>
+                <span>Rs. {total}</span>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-auto">
+              <Button variant="destructive" onClick={handleClearCart} className="flex-1">Clear Cart</Button>
+              <Button variant="default" className="flex-1">Checkout</Button>
             </div>
           </motion.div>
         )}
