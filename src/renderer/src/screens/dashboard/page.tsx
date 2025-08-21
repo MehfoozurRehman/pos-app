@@ -159,43 +159,23 @@ function ProductsPanel() {
     <motion.div
       initial={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
       animate={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
-      className="flex flex-col p-4 bg-background/50 rounded-lg w-full gap-4"
+      className="flex flex-col p-4 bg-card/60 backdrop-blur-sm rounded-lg w-full gap-4"
     >
       <div className="flex items-center justify-between">
-        Products
+        <h2 className="text-lg font-semibold">Products</h2>
         <Input type="search" placeholder="Search products" className="max-w-[300px]" />
       </div>
+
       <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
-        {[
-          'Product 1',
-          'Product 2',
-          'Product 3',
-          'Product 4',
-          'Product 5',
-          'Product 6',
-          'Product 7',
-          'Product 8',
-          'Product 9',
-          'Product 10',
-          'Product 11',
-          'Product 12',
-          'Product 4',
-          'Product 5',
-          'Product 6',
-          'Product 7',
-          'Product 8',
-          'Product 9',
-          'Product 10',
-          'Product 11',
-          'Product 12',
-        ].map((product) => (
-          <Button variant="outline" key={product} className={`${true ? 'bg-background/50! hover:bg-background' : ''}`}>
+        {['All', 'CPU', 'GPU', 'Memory', 'Storage', 'Motherboard', 'Peripherals'].map((product) => (
+          <Button variant="outline" key={product} className="bg-background/30 hover:bg-background/60 transition">
             {product}
           </Button>
         ))}
       </ScrollContainer>
-      <ScrollArea className="max-h-[calc(100vh-565px)] overflow-y-auto bg-sidebar/50 p-2 rounded-lg">
-        <div className="flex flex-wrap gap-[1em]">
+
+      <ScrollArea className="max-h-[calc(100vh-565px)] overflow-y-auto bg-sidebar/50 p-3 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -211,7 +191,7 @@ function MainPanel({ children }: { children: React.ReactNode }) {
   const width = cartVisible ? 'calc(100% - 400px)' : '100%';
 
   return (
-    <motion.div initial={{ width }} animate={{ width }} className={`flex flex-col h-full border-r p-4 gap-4`}>
+    <motion.div initial={{ width }} animate={{ width }} className={`flex flex-col h-full border-r p-4 gap-4 relative`}>
       {children}
     </motion.div>
   );
@@ -219,20 +199,20 @@ function MainPanel({ children }: { children: React.ReactNode }) {
 
 function ProductCard({ product }: { product: (typeof products)[number] }) {
   return (
-    <Card className="p-0 w-[calc(25%-1em)] pb-4 cursor-pointer bg-background/50 hover:bg-background rounded-lg">
-      <div className="flex items-center justify-center h-[150px] bg-background rounded-lg">
-        <Image className="text-foreground" size={40} />
+    <Card className="p-0 w-full pb-4 cursor-pointer bg-background/40 hover:bg-background/60 rounded-lg shadow-sm transform hover:scale-[1.01] transition">
+      <div className="flex items-center justify-center h-[140px] bg-gradient-to-br from-muted/20 to-muted/5 rounded-t-lg">
+        <Image className="text-foreground opacity-80" size={48} />
       </div>
-      <div className="flex flex-col gap-2 px-6">
-        <div className="font-semibold">{product.name}</div>
-        <div className="text-foreground">Rs. {product.price}</div>
-        <div className="flex gap-1">
+      <div className="flex flex-col gap-2 px-4 py-3">
+        <div className="font-semibold text-sm leading-tight line-clamp-2">{product.name}</div>
+        <div className="text-foreground font-medium">Rs. {product.price}</div>
+        <div className="flex gap-2 flex-wrap">
           {product.tags.map((tag) => (
             <Badge key={tag}>{tag}</Badge>
           ))}
         </div>
       </div>
-      <div className="border-t pt-4 flex justify-end pr-4">
+      <div className="border-t pt-3 flex justify-end pr-4">
         <Button variant="default" size="sm" className="w-fit">
           Add to Order
         </Button>
