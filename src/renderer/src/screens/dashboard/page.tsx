@@ -239,7 +239,7 @@ function OrderPanel() {
         {orderQueueVisible && (
           <div className="flex flex-col p-4 bg-background/50 rounded-lg w-full">
             <div className="flex items-center justify-between mb-4">
-              Order Queue
+              <h3 className="text-lg font-medium">Order Queue</h3>
               <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={() => setOrderQueueVisible(false)}>
                   <EyeIcon />
