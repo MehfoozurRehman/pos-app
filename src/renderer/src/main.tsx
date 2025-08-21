@@ -3,6 +3,7 @@ import './global.css';
 import { RouterProvider, createHashRouter } from 'react-router';
 
 import Analytics from './screens/dashboard/analytics/page';
+import Billing from './screens/dashboard/billing/page';
 import Customers from './screens/dashboard/customers/page';
 import Dashboard from './screens/dashboard/page';
 import Help from './screens/dashboard/help/page';
@@ -44,6 +45,10 @@ const router = createHashRouter([
       {
         path: 'analytics',
         element: <Analytics />,
+      },
+      {
+        path: 'billing',
+        element: <Billing />,
       },
       {
         path: 'settings',
