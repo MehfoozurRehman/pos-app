@@ -8,7 +8,7 @@ import { Button } from '@renderer/components/ui/button';
 import { Card } from '@renderer/components/ui/card';
 import { Input } from '@renderer/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ScrollContainer } from '../../components/scroll-container';
+import { ScrollContainer } from '@/components/scroll-container';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router';
 
