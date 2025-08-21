@@ -142,13 +142,13 @@ export default function Dashboard() {
   const isAnyPanelInvisible = !cartVisible || !orderQueueVisible;
 
   return (
-    <div className={`flex gap-4 h-full overflow-hidden ${isAnyPanelInvisible ? 'pr-15' : ''}`}>
+    <motion.div initial={{ paddingRight: 0 }} animate={{ paddingRight: isAnyPanelInvisible ? '50px' : '0px' }} className={`flex gap-4 h-full overflow-hidden`}>
       <MainPanel>
         <OrderPanel />
         <ProductsPanel />
       </MainPanel>
       <OrderDetails />
-    </div>
+    </motion.div>
   );
 }
 
