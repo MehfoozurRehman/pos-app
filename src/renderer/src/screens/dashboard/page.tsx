@@ -191,7 +191,7 @@ function MainPanel({ children }: { children: React.ReactNode }) {
   const width = cartVisible ? 'calc(100% - 400px)' : '100%';
 
   return (
-    <motion.div initial={{ width }} animate={{ width }} className={`flex flex-col h-full border-r p-4 gap-4 relative`}>
+    <motion.div initial={{ width }} animate={{ width }} className="flex flex-col h-full border-r p-4 gap-4">
       {children}
     </motion.div>
   );
