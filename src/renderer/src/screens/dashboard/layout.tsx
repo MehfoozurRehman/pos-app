@@ -17,7 +17,7 @@ export default function Layout() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <Header />
-        <div className="flex w-full flex-col">
+        <div className="flex w-full flex-col h-full">
           <Outlet />
         </div>
       </SidebarInset>
