@@ -2,7 +2,7 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-//@ts-ignore // eslint-disable-next-line
+//@ts-ignore
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
