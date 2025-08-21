@@ -157,8 +157,10 @@ function ProductsPanel() {
 
   return (
     <motion.div
+      layout
       initial={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
       animate={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
+      transition={{ duration: 0.28 }}
       className="flex flex-col p-4 bg-card/60 backdrop-blur-sm rounded-lg w-full gap-4"
     >
       <div className="flex items-center justify-between">
@@ -191,7 +193,7 @@ function MainPanel({ children }: { children: React.ReactNode }) {
   const width = cartVisible ? 'calc(100% - 400px)' : '100%';
 
   return (
-    <motion.div initial={{ width }} animate={{ width }} className="flex flex-col h-full border-r p-4 gap-4">
+    <motion.div initial={{ width }} animate={{ width }} className="flex flex-col justify-end h-full border-r p-4 gap-4">
       {children}
     </motion.div>
   );
