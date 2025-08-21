@@ -175,7 +175,7 @@ function ProductsPanel() {
         ))}
       </ScrollContainer>
       <ScrollArea className={`${orderQueueVisible ? 'max-h-[calc(100vh-565px)]' : 'max-h-[calc(100vh-200px)]'} overflow-y-auto bg-sidebar/50 p-3 rounded-lg`}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
