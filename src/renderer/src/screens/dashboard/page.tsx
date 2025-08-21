@@ -1,160 +1,304 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { BoxIcon, EyeIcon } from 'lucide-react';
+import { BoxIcon, EyeIcon, Image } from 'lucide-react';
+import { cartVisibilityAtom, orderQueueVisibilityAtom } from '@renderer/state';
 import { useAtom, useAtomValue } from 'jotai/react';
 
+import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
 import { Card } from '@renderer/components/ui/card';
 import { Input } from '@renderer/components/ui/input';
-import { cartVisibilityAtom } from '@renderer/state';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollContainer } from '../../components/scroll-container';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router';
-import { useRef } from 'react';
 
-function ScrollContainer({
-  children,
-  containerClassName,
-  childrenClassName,
-  ...props
-}: { children: React.ReactNode } & React.HTMLProps<HTMLDivElement> & {
-    containerClassName?: string;
-    childrenClassName?: string;
-  }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const scrollLeft = useRef(0);
-
-  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    isDragging.current = true;
-    startX.current = e.pageX - (ref.current?.offsetLeft || 0);
-    scrollLeft.current = ref.current?.scrollLeft || 0;
-    document.body.style.cursor = 'grabbing';
-  };
-
-  const onMouseLeave = () => {
-    isDragging.current = false;
-    document.body.style.cursor = '';
-  };
-
-  const onMouseUp = () => {
-    isDragging.current = false;
-    document.body.style.cursor = '';
-  };
-
-  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging.current || !ref.current) return;
-    e.preventDefault();
-    const x = e.pageX - ref.current.offsetLeft;
-    const walk = (x - startX.current) * 1;
-    ref.current.scrollLeft = scrollLeft.current - walk;
-  };
-
-  return (
-    <div
-      ref={ref}
-      style={{ overflow: 'hidden', cursor: 'grab', width: '100%' }}
-      onMouseDown={onMouseDown}
-      onMouseLeave={onMouseLeave}
-      onMouseUp={onMouseUp}
-      onMouseMove={onMouseMove}
-      {...props}
-      className={containerClassName}
-    >
-      <div style={{ whiteSpace: 'nowrap' }} className={childrenClassName}>
-        {children}
-      </div>
-    </div>
-  );
-}
+const products = [
+  {
+    id: 1,
+    name: 'Intel Core i7 12700K Processor',
+    price: 350,
+    tags: ['cpu', 'intel', '12th-gen'],
+  },
+  {
+    id: 2,
+    name: 'AMD Ryzen 9 5900X Processor',
+    price: 420,
+    tags: ['cpu', 'amd', 'zen3'],
+  },
+  {
+    id: 3,
+    name: 'NVIDIA GeForce RTX 4080 GPU',
+    price: 1200,
+    tags: ['gpu', 'nvidia', 'graphics-card'],
+  },
+  {
+    id: 4,
+    name: 'AMD Radeon RX 7900 XT GPU',
+    price: 950,
+    tags: ['gpu', 'amd', 'graphics-card'],
+  },
+  {
+    id: 5,
+    name: 'Corsair Vengeance 32GB DDR5 RAM',
+    price: 180,
+    tags: ['memory', 'ram', 'ddr5'],
+  },
+  {
+    id: 6,
+    name: 'G.Skill Trident Z 16GB DDR4 RAM',
+    price: 85,
+    tags: ['memory', 'ram', 'ddr4'],
+  },
+  {
+    id: 7,
+    name: 'Samsung 980 Pro 1TB NVMe SSD',
+    price: 130,
+    tags: ['storage', 'ssd', 'nvme'],
+  },
+  {
+    id: 8,
+    name: 'Seagate Barracuda 2TB HDD',
+    price: 60,
+    tags: ['storage', 'hdd', 'sata'],
+  },
+  {
+    id: 9,
+    name: 'ASUS ROG Strix Z690 Motherboard',
+    price: 290,
+    tags: ['motherboard', 'asus', 'intel'],
+  },
+  {
+    id: 10,
+    name: 'MSI MAG B550 Tomahawk Motherboard',
+    price: 160,
+    tags: ['motherboard', 'msi', 'amd'],
+  },
+  {
+    id: 11,
+    name: 'Cooler Master Hyper 212 RGB CPU Cooler',
+    price: 50,
+    tags: ['cooler', 'air-cooling', 'rgb'],
+  },
+  {
+    id: 12,
+    name: 'NZXT Kraken X63 Liquid Cooler',
+    price: 150,
+    tags: ['cooler', 'aio', 'liquid-cooling'],
+  },
+  {
+    id: 13,
+    name: 'Corsair RM850x 850W PSU',
+    price: 140,
+    tags: ['psu', 'power-supply', 'modular'],
+  },
+  {
+    id: 14,
+    name: 'EVGA 650W Bronze PSU',
+    price: 75,
+    tags: ['psu', 'power-supply', 'budget'],
+  },
+  {
+    id: 15,
+    name: 'Phanteks Eclipse P400A ATX Case',
+    price: 90,
+    tags: ['case', 'mid-tower', 'phanteks'],
+  },
+  {
+    id: 16,
+    name: 'Lian Li PC-O11 Dynamic Case',
+    price: 160,
+    tags: ['case', 'mid-tower', 'lian-li'],
+  },
+  {
+    id: 17,
+    name: 'Logitech G Pro X Mechanical Keyboard',
+    price: 120,
+    tags: ['keyboard', 'mechanical', 'gaming'],
+  },
+  {
+    id: 18,
+    name: 'Razer DeathAdder V2 Mouse',
+    price: 60,
+    tags: ['mouse', 'gaming', 'razer'],
+  },
+  {
+    id: 19,
+    name: 'Dell UltraSharp 27" 4K Monitor',
+    price: 480,
+    tags: ['monitor', '4k', 'dell'],
+  },
+  {
+    id: 20,
+    name: 'ASUS TUF Gaming 27" 165Hz Monitor',
+    price: 300,
+    tags: ['monitor', 'gaming', 'asus'],
+  },
+];
 
 export default function Dashboard() {
+  const cartVisible = useAtomValue(cartVisibilityAtom);
+  const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
+
+  const isAnyPanelInvisible = !cartVisible || !orderQueueVisible;
+
   return (
-    <div className=" flex gap-4 h-full overflow-hidden">
+    <div className={`flex gap-4 h-full overflow-hidden ${isAnyPanelInvisible ? 'pr-15' : ''}`}>
       <MainPanel>
         <OrderPanel />
-        <div className="flex flex-col h-full p-4 bg-background/50 rounded-lg w-full">
-          <div className="flex items-center justify-between mb-4">
-            Products
-            <Input type="search" placeholder="Search products" className="max-w-[300px]" />
-          </div>
-          <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
-            {[
-              'Product 1',
-              'Product 2',
-              'Product 3',
-              'Product 4',
-              'Product 5',
-              'Product 6',
-              'Product 7',
-              'Product 8',
-              'Product 9',
-              'Product 10',
-              'Product 11',
-              'Product 12',
-              'Product 4',
-              'Product 5',
-              'Product 6',
-              'Product 7',
-              'Product 8',
-              'Product 9',
-              'Product 10',
-              'Product 11',
-              'Product 12',
-            ].map((product) => (
-              <Button variant="outline" key={product} className={`${true ? 'bg-background/50! hover:bg-background' : ''}`}>
-                {product}
-              </Button>
-            ))}
-          </ScrollContainer>
-          <div className="flex flex-wrap flex-1"></div>
-        </div>
+        <ProductsPanel />
       </MainPanel>
       <OrderDetails />
     </div>
   );
 }
 
-function MainPanel({ children }: { children: React.ReactNode }) {
-  const cartVisible = useAtomValue(cartVisibilityAtom);
+function ProductsPanel() {
+  const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
 
   return (
     <motion.div
-      initial={{ width: cartVisible ? 'calc(100% - 400px)' : '100%' }}
-      animate={{ width: cartVisible ? 'calc(100% - 400px)' : '100%' }}
-      className={`flex flex-col h-full border-r p-4 gap-4 ${cartVisible ? '' : 'pr-15'}`}
+      initial={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
+      animate={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
+      className="flex flex-col p-4 bg-background/50 rounded-lg w-full gap-4"
     >
+      <div className="flex items-center justify-between">
+        Products
+        <Input type="search" placeholder="Search products" className="max-w-[300px]" />
+      </div>
+      <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
+        {[
+          'Product 1',
+          'Product 2',
+          'Product 3',
+          'Product 4',
+          'Product 5',
+          'Product 6',
+          'Product 7',
+          'Product 8',
+          'Product 9',
+          'Product 10',
+          'Product 11',
+          'Product 12',
+          'Product 4',
+          'Product 5',
+          'Product 6',
+          'Product 7',
+          'Product 8',
+          'Product 9',
+          'Product 10',
+          'Product 11',
+          'Product 12',
+        ].map((product) => (
+          <Button variant="outline" key={product} className={`${true ? 'bg-background/50! hover:bg-background' : ''}`}>
+            {product}
+          </Button>
+        ))}
+      </ScrollContainer>
+      <ScrollArea className="max-h-[calc(100vh-565px)] overflow-y-auto bg-sidebar/50 p-2 rounded-lg">
+        <div className="flex flex-wrap gap-[1em]">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </ScrollArea>
+    </motion.div>
+  );
+}
+
+function MainPanel({ children }: { children: React.ReactNode }) {
+  const cartVisible = useAtomValue(cartVisibilityAtom);
+
+  const width = cartVisible ? 'calc(100% - 400px)' : '100%';
+
+  return (
+    <motion.div initial={{ width }} animate={{ width }} className={`flex flex-col h-full border-r p-4 gap-4`}>
       {children}
     </motion.div>
+  );
+}
+
+function ProductCard({ product }: { product: (typeof products)[number] }) {
+  return (
+    <Card className="p-0 w-[calc(25%-1em)] pb-4 cursor-pointer bg-background/50 hover:bg-background rounded-lg">
+      <div className="flex items-center justify-center h-[150px] bg-background rounded-lg">
+        <Image className="text-foreground" size={40} />
+      </div>
+      <div className="flex flex-col gap-2 px-6">
+        <div className="font-semibold">{product.name}</div>
+        <div className="text-foreground">Rs. {product.price}</div>
+        <div className="flex gap-1">
+          {product.tags.map((tag) => (
+            <Badge key={tag}>{tag}</Badge>
+          ))}
+        </div>
+      </div>
+      <div className="border-t pt-4 flex justify-end pr-4">
+        <Button variant="default" size="sm" className="w-fit">
+          Add to Order
+        </Button>
+      </div>
+    </Card>
   );
 }
 
 function OrderPanel() {
   const navigate = useNavigate();
 
+  const cartVisible = useAtomValue(cartVisibilityAtom);
+  const [orderQueueVisible, setOrderQueueVisible] = useAtom(orderQueueVisibilityAtom);
+
   return (
-    <div className="flex flex-col p-4 bg-background/50 rounded-lg w-full">
-      <div className="flex items-center justify-between mb-4">
-        Order Queue
-        <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <EyeIcon />
-          </Button>
-          <Button onClick={() => navigate('/dashboard/orders')} variant="default">
-            View All
-          </Button>
-        </div>
+    <>
+      {!orderQueueVisible && (
+        <Button variant="default" onClick={() => setOrderQueueVisible(true)} className={`absolute -right-15 ${cartVisible ? 'top-30' : 'top-75'} rotate-90`}>
+          <EyeIcon />
+          <span>View Order Queue</span>
+        </Button>
+      )}
+      <AnimatePresence>
+        {orderQueueVisible && (
+          <div className="flex flex-col p-4 bg-background/50 rounded-lg w-full">
+            <div className="flex items-center justify-between mb-4">
+              Order Queue
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => setOrderQueueVisible(false)}>
+                  <EyeIcon />
+                </Button>
+                <Button onClick={() => navigate('/dashboard/orders')} variant="default">
+                  View All
+                </Button>
+              </div>
+            </div>
+            <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
+              <OrderCard />
+              <OrderCard />
+              <OrderCard />
+              <OrderCard />
+              <OrderCard />
+              <OrderCard />
+              <OrderCard />
+              <OrderCard />
+            </ScrollContainer>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+function OrderCard() {
+  return (
+    <Card className="p-0 min-w-[250px] gap-4 pb-4 cursor-pointer bg-background/50 hover:bg-background">
+      <div className="font-bold border-b p-3">#12334</div>
+      <div className="px-4 flex flex-col gap-4">
+        <div className="font-bold">Hussnain</div>
+        <div className="text-foreground">{dayjs().format('DD MM YYYY HH:mm A')}</div>
+        <Button variant="outline" className="w-fit">
+          <BoxIcon />
+          {5} Items
+        </Button>
       </div>
-      <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-      </ScrollContainer>
-    </div>
+    </Card>
   );
 }
 
@@ -182,21 +326,5 @@ function OrderDetails() {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-function OrderCard() {
-  return (
-    <Card className="p-0 min-w-[250px] gap-4 pb-4 cursor-pointer bg-background/50 hover:bg-background">
-      <div className="font-bold border-b p-3">#12334</div>
-      <div className="px-4 flex flex-col gap-4">
-        <div className="font-bold">Hussnain</div>
-        <div className="text-foreground">{dayjs().format('DD MM YYYY HH:mm A')}</div>
-        <Button variant="outline" className="w-fit">
-          <BoxIcon />
-          {5} Items
-        </Button>
-      </div>
-    </Card>
   );
 }
