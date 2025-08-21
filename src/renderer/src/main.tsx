@@ -2,7 +2,8 @@ import './global.css';
 
 import { RouterProvider, createHashRouter } from 'react-router';
 
-import Home from './screens/page';
+import Dashboard from './screens/dashboard/page';
+import Login from './screens/page';
 import { StrictMode } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
 import { createRoot } from 'react-dom/client';
@@ -10,7 +11,11 @@ import { createRoot } from 'react-dom/client';
 const router = createHashRouter([
   {
     path: '/',
-    element: <Home />,
+    element: <Login />,
+  },
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
   },
 ]);
 

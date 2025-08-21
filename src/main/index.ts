@@ -1,13 +1,18 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
-import { join } from 'path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import { BrowserWindow, app, ipcMain, shell } from 'electron';
+import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+
 import icon from '../../resources/icon.png?asset';
+import { join } from 'path';
+
+const { screen } = require('electron');
 
 function createWindow(): void {
   // Create the browser window.
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width,
+    height,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
