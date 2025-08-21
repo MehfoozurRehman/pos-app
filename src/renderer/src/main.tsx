@@ -5,6 +5,7 @@ import { RouterProvider, createHashRouter } from 'react-router';
 import Dashboard from './screens/dashboard/page';
 import Layout from './screens/dashboard/layout';
 import Login from './screens/page';
+import NotFound from './screens/not-found/page';
 import { StrictMode } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
 import { createRoot } from 'react-dom/client';
@@ -23,6 +24,10 @@ const router = createHashRouter([
         element: <Dashboard />,
       },
     ],
+  },
+  {
+    path: '*',
+    element: <NotFound />,
   },
 ]);
 
