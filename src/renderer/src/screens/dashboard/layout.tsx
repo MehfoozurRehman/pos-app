@@ -1,8 +1,8 @@
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 import { AppSidebar } from '@/components/app-sidebar';
+import { Header } from '@renderer/components/header';
 import { Outlet } from 'react-router';
-import { SiteHeader } from '@/components/site-header';
 
 export default function Layout() {
   return (
@@ -16,7 +16,7 @@ export default function Layout() {
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <Header />
         <div className="flex flex-1 flex-col">
           <Outlet />
         </div>
