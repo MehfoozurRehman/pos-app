@@ -1,3 +1,4 @@
+import { cn } from '@renderer/lib/utils';
 import { useRef } from 'react';
 
 export function ScrollContainer({
@@ -39,16 +40,36 @@ export function ScrollContainer({
     ref.current.scrollLeft = scrollLeft.current - walk;
   };
 
+  const onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      const prev = el.scrollLeft;
+      el.scrollLeft += e.deltaY;
+      if (el.scrollLeft !== prev) {
+        e.preventDefault();
+      }
+    }
+  };
+
   return (
     <div
       ref={ref}
-      style={{ overflow: 'hidden', cursor: 'grab', width: '100%' }}
+      style={{
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        cursor: 'grab',
+        width: '100%',
+        WebkitOverflowScrolling: 'touch',
+        ...(props.style as React.CSSProperties),
+      }}
       onMouseDown={onMouseDown}
       onMouseLeave={onMouseLeave}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
+      onWheel={onWheel}
       {...props}
-      className={containerClassName}
+      className={cn('hide-scrollbar', containerClassName)}
     >
       <div style={{ whiteSpace: 'nowrap' }} className={childrenClassName}>
         {children}
