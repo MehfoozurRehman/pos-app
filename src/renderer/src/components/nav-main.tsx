@@ -16,7 +16,7 @@ export function NavMain({ items }: { items: { title: string; url: string; icon?:
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
+          <SidebarMenuItem className="flex items-center gap-2 mb-3">
             <SidebarMenuButton
               onClick={() => navigate('/dashboard')}
               tooltip="New Order"
