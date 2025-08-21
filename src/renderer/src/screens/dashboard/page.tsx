@@ -167,7 +167,6 @@ function ProductsPanel() {
         <h2 className="text-lg font-semibold">Products</h2>
         <Input type="search" placeholder="Search products" className="max-w-[300px]" />
       </div>
-
       <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
         {['All', 'CPU', 'GPU', 'Memory', 'Storage', 'Motherboard', 'Peripherals'].map((product) => (
           <Button variant="outline" key={product} className="bg-background/30 hover:bg-background/60 transition">
@@ -175,8 +174,7 @@ function ProductsPanel() {
           </Button>
         ))}
       </ScrollContainer>
-
-      <ScrollArea className="max-h-[calc(100vh-565px)] overflow-y-auto bg-sidebar/50 p-3 rounded-lg">
+      <ScrollArea className={`${orderQueueVisible ? 'max-h-[calc(100vh-565px)]' : 'max-h-[calc(100vh-200px)]'} overflow-y-auto bg-sidebar/50 p-3 rounded-lg`}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
