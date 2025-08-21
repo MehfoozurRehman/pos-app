@@ -3,6 +3,7 @@ import './global.css';
 import { RouterProvider, createHashRouter } from 'react-router';
 
 import Dashboard from './screens/dashboard/page';
+import Layout from './screens/dashboard/layout';
 import Login from './screens/page';
 import { StrictMode } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -15,7 +16,13 @@ const router = createHashRouter([
   },
   {
     path: '/dashboard',
-    element: <Dashboard />,
+    element: <Layout />,
+    children: [
+      {
+        path: '',
+        element: <Dashboard />,
+      },
+    ],
   },
 ]);
 
