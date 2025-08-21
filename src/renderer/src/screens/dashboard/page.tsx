@@ -340,7 +340,9 @@ function OrderDetails() {
             </div>
             <div className="mb-2">
               <div className="font-semibold">Customer</div>
-              <div className="text-sm text-muted-foreground">{order.customerName} ({order.customerPhone})</div>
+              <div className="text-sm text-muted-foreground">
+                {order.customerName} ({order.customerPhone})
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto mb-4">
               <div className="font-semibold mb-2">Items</div>
@@ -350,9 +352,7 @@ function OrderDetails() {
                     <div>
                       <div className="font-medium text-sm">{item.name}</div>
                       <div className="text-xs text-muted-foreground">Barcode: {item.barcode}</div>
-                      {item.discount ? (
-                        <div className="text-xs text-green-600">Discount: Rs. {item.discount}</div>
-                      ) : null}
+                      {item.discount ? <div className="text-xs text-green-600">Discount: Rs. {item.discount}</div> : null}
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className="font-semibold">Rs. {item.price - (item.discount || 0)}</span>
@@ -381,8 +381,12 @@ function OrderDetails() {
               </div>
             </div>
             <div className="flex gap-2 mt-auto">
-              <Button variant="destructive" onClick={handleClearCart} className="flex-1">Clear Cart</Button>
-              <Button variant="default" className="flex-1">Checkout</Button>
+              <Button variant="destructive" onClick={handleClearCart} className="flex-1">
+                Clear Cart
+              </Button>
+              <Button variant="default" className="flex-1">
+                Checkout
+              </Button>
             </div>
           </motion.div>
         )}
