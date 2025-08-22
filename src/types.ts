@@ -5,14 +5,6 @@ type Notes = {
   createdAt: string;
 };
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  createdAt: string;
-};
-
 type Product = {
   id: string;
   name: string;
@@ -48,13 +40,6 @@ type Order = {
   createdAt: string;
 };
 
-type Payment = {
-  id: string;
-  month: string;
-  year: string;
-  createdAt: string;
-};
-
 type Shop = {
   id: string;
   shopId: string;
@@ -67,11 +52,9 @@ type Shop = {
 
 export type DBSchema = {
   notes: Notes[];
-  users: User[];
   products: Product[];
   inventory: Inventory[];
   orders: Order[];
-  payments: Payment[];
   shop: Shop | null;
   changes: {
     id: string;
