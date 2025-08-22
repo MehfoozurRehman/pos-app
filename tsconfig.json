@@ -11,17 +11,17 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/renderer/src/*"],
-      "@renderer/*": ["src/renderer/src/*"]
+      "@/*": ["src/renderer/*"],
+      "@renderer/*": ["src/renderer/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["node", "electron", "electron-vite/node", "vite/client"]
   },
   "include": [
-    "src/renderer/src/env.d.ts",
-    "src/renderer/src/**/*",
-    "src/renderer/src/**/*.tsx",
+    "src/renderer/env.d.ts",
+    "src/renderer/**/*",
+    "src/renderer/**/*.tsx",
     "src/main/**/*",
     "src/preload/**/*",
     "electron.vite.config.*"
