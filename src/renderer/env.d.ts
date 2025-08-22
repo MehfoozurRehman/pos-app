@@ -3,18 +3,20 @@
 import type { IpcRenderer } from 'electron';
 import type { DBSchema } from 'src/types';
 
+type TableItem<K extends keyof DBSchema> = DBSchema[K] extends Array<infer U> ? U : DBSchema[K];
+
 type InvokeChannel = {
   'db:get': {
     args: [table: keyof DBSchema];
     response: DBSchema[keyof DBSchema];
   };
   'db:create': {
-    args: [table: keyof DBSchema, item: DBSchema[keyof DBSchema][number]];
-    response: DBSchema[keyof DBSchema][number];
+    args: [table: keyof DBSchema, item: TableItem<keyof DBSchema>];
+    response: TableItem<keyof DBSchema>;
   };
   'db:update': {
-    args: [table: keyof DBSchema, id: string, patch: Partial<DBSchema[keyof DBSchema][number]>];
-    response: DBSchema[keyof DBSchema][number] | null;
+    args: [table: keyof DBSchema, id: string, patch: Partial<TableItem<keyof DBSchema>>];
+    response: TableItem<keyof DBSchema> | null;
   };
   'db:delete': {
     args: [table: keyof DBSchema, id: string];
@@ -44,9 +46,9 @@ export interface PreloadAPI {
     reallyQuit: () => Promise<boolean>;
   };
   db: {
-    get: (table: keyof DBSchema) => Promise<DBSchema[keyof DBSchema]>;
-    create: <T extends keyof DBSchema>(table: T, item: DBSchema[T][number]) => Promise<DBSchema[T][number]>;
-    update: <T extends keyof DBSchema>(table: T, id: string, patch: Partial<DBSchema[T][number]>) => Promise<DBSchema[T][number] | null>;
+    get: <T extends keyof DBSchema>(table: T) => Promise<DBSchema[T]>;
+    create: <T extends keyof DBSchema>(table: T, item: TableItem<T>) => Promise<TableItem<T>>;
+    update: <T extends keyof DBSchema>(table: T, id: string, patch: Partial<TableItem<T>>) => Promise<TableItem<T> | null>;
     delete: (table: keyof DBSchema, id: string) => Promise<boolean>;
     changesSince: (
       sinceIso: string,
@@ -68,9 +70,9 @@ declare global {
   interface Window {
     electron: {
       ipcRenderer: Omit<IpcRenderer, 'invoke'> & {
-        invoke(channel: 'db:get', table: keyof DBSchema): Promise<DBSchema[keyof DBSchema]>;
-        invoke<T extends keyof DBSchema>(channel: 'db:create', table: T, item: DBSchema[T][number]): Promise<DBSchema[T][number]>;
-        invoke<T extends keyof DBSchema>(channel: 'db:update', table: T, id: string, patch: Partial<DBSchema[T][number]>): Promise<DBSchema[T][number] | null>;
+        invoke<T extends keyof DBSchema>(channel: 'db:get', table: T): Promise<DBSchema[T]>;
+        invoke<T extends keyof DBSchema>(channel: 'db:create', table: T, item: TableItem<T>): Promise<TableItem<T>>;
+        invoke<T extends keyof DBSchema>(channel: 'db:update', table: T, id: string, patch: Partial<TableItem<T>>): Promise<TableItem<T> | null>;
         invoke(channel: 'db:delete', table: keyof DBSchema, id: string): Promise<boolean>;
         invoke<C extends ChannelName>(channel: C, ...args: unknown[]): Promise<InvokeResponse<C>>;
       };
