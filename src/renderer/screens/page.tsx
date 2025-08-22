@@ -11,7 +11,7 @@ export default function Login() {
         <LoginForm />
         <button
           onClick={async () => {
-            const notes = await window.electron.ipcRenderer.invoke('db:get', 'notes');
+            const notes = await window.api.db.get('notes');
             console.warn(notes);
           }}
         >
@@ -19,8 +19,9 @@ export default function Login() {
         </button>
         <button
           onClick={async () => {
-            await window.electron.ipcRenderer.invoke('db:create', 'notes', {
+            await window.api.db.create('notes', {
               id: '1',
+              title: 'hello',
               content: 'Welcome to the POS App!',
               createdAt: new Date().toISOString(),
             });
@@ -30,7 +31,7 @@ export default function Login() {
         </button>
         <button
           onClick={async () => {
-            const updated = await window.electron.ipcRenderer.invoke('db:update', 'notes', '1', {
+            const updated = await window.api.db.update('notes', '1', {
               title: 'test',
             });
             console.warn('updated', updated);
@@ -40,7 +41,7 @@ export default function Login() {
         </button>
         <button
           onClick={async () => {
-            const removed = await window.electron.ipcRenderer.invoke('db:delete', 'notes', '1');
+            const removed = await window.api.db.delete('notes', '1');
             console.warn('removed', removed);
           }}
         >
