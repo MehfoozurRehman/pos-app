@@ -48,7 +48,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-  preload: path.join(__dirname, '../preload/index.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
     },
   });
@@ -83,7 +83,7 @@ function createWindow(): void {
 function createTray() {
   try {
     if (tray) return;
-  const trayImg = typeof icon === 'string' ? nativeImage.createFromPath(icon) : nativeImage.createFromPath(path.join(__dirname, '../../resources/icon.png'));
+    const trayImg = typeof icon === 'string' ? nativeImage.createFromPath(icon) : nativeImage.createFromPath(path.join(__dirname, '../../resources/icon.png'));
     tray = new Tray(trayImg);
 
     const contextMenu = Menu.buildFromTemplate([
