@@ -9,6 +9,43 @@ export default function Login() {
       </div>
       <div className="w-full max-w-sm">
         <LoginForm />
+        <button
+          onClick={async () => {
+            const notes = await window.electron.ipcRenderer.invoke('db:get', 'notes');
+            console.warn(notes);
+          }}
+        >
+          get notes
+        </button>
+        <button
+          onClick={async () => {
+            await window.electron.ipcRenderer.invoke('db:create', 'notes', {
+              id: '1',
+              content: 'Welcome to the POS App!',
+              createdAt: new Date().toISOString(),
+            });
+          }}
+        >
+          create note
+        </button>
+        <button
+          onClick={async () => {
+            const updated = await window.electron.ipcRenderer.invoke('db:update', 'notes', '1', {
+              title: 'test',
+            });
+            console.warn('updated', updated);
+          }}
+        >
+          update note
+        </button>
+        <button
+          onClick={async () => {
+            const removed = await window.electron.ipcRenderer.invoke('db:delete', 'notes', '1');
+            console.warn('removed', removed);
+          }}
+        >
+          delete note
+        </button>
       </div>
     </div>
   );
