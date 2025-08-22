@@ -1,4 +1,4 @@
-import { BrowserWindow, app, ipcMain, shell, Tray, Menu, nativeImage } from 'electron';
+import { BrowserWindow, app, ipcMain, shell, Tray, Menu, nativeImage, screen } from 'electron';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { DBSchema } from '../types.ts';
 import { JSONFilePreset } from 'lowdb/node';
@@ -6,9 +6,6 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import icon from '../../resources/icon.png?asset';
-import { join } from 'path';
-
-const { screen } = require('electron');
 
 const homeDir = os.homedir();
 
@@ -51,7 +48,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+  preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
     },
   });
@@ -75,7 +72,7 @@ function createWindow(): void {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
   mainWindow.on('closed', () => {
@@ -86,7 +83,7 @@ function createWindow(): void {
 function createTray() {
   try {
     if (tray) return;
-    const trayImg = typeof icon === 'string' ? nativeImage.createFromPath(icon) : nativeImage.createFromPath(join(__dirname, '../../resources/icon.png'));
+  const trayImg = typeof icon === 'string' ? nativeImage.createFromPath(icon) : nativeImage.createFromPath(path.join(__dirname, '../../resources/icon.png'));
     tray = new Tray(trayImg);
 
     const contextMenu = Menu.buildFromTemplate([
