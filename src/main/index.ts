@@ -33,6 +33,7 @@ async function getDb(): Promise<Awaited<ReturnType<typeof JSONFilePreset<DBSchem
       inventory: [],
       orders: [],
       payments: [],
+      shop: [],
       changes: [],
     });
   }
@@ -139,6 +140,12 @@ app.whenReady().then(async () => {
     if (!Array.isArray(db.data[key])) {
       db.data[key] = [];
     }
+
+    if (key === ('shop' as keyof DBSchema)) {
+      if (data && data.shopId && !data.id) data.id = data.shopId;
+      if (data && !data.createdAt) data.createdAt = new Date().toISOString();
+    }
+
     db.data[key].push(data);
     if (!Array.isArray(db.data.changes)) {
       db.data.changes = [];
