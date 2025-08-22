@@ -1,4 +1,4 @@
-import { BrowserWindow, app, ipcMain, shell } from 'electron';
+import { BrowserWindow, app, ipcMain, shell, Tray, Menu, nativeImage } from 'electron';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { DBSchema } from '../types.ts';
 import { JSONFilePreset } from 'lowdb/node';
@@ -17,6 +17,10 @@ const appDataDir = path.join(homeDir, 'pos-app-data');
 const dbFile = path.join(appDataDir, 'db.json');
 
 let dbInstance: Awaited<ReturnType<typeof JSONFilePreset<DBSchema>>> | null = null;
+
+let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
 
 async function getDb(): Promise<Awaited<ReturnType<typeof JSONFilePreset<DBSchema>>>> {
   if (!dbInstance) {
@@ -40,7 +44,7 @@ async function getDb(): Promise<Awaited<ReturnType<typeof JSONFilePreset<DBSchem
 function createWindow(): void {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width,
     height,
     show: false,
@@ -53,7 +57,14 @@ function createWindow(): void {
   });
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show();
+    mainWindow?.show();
+  });
+
+  mainWindow.on('close', (e) => {
+    if (!isQuitting) {
+      e.preventDefault();
+      mainWindow?.hide();
+    }
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -65,6 +76,51 @@ function createWindow(): void {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+  }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+function createTray() {
+  try {
+    if (tray) return;
+    const trayImg = typeof icon === 'string' ? nativeImage.createFromPath(icon) : nativeImage.createFromPath(join(__dirname, '../../resources/icon.png'));
+    tray = new Tray(trayImg);
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Show',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          } else {
+            createWindow();
+          }
+        },
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          isQuitting = true;
+          app.quit();
+        },
+      },
+    ]);
+
+    tray.setToolTip('pos-app');
+    tray.setContextMenu(contextMenu);
+    tray.on('double-click', () => {
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    });
+  } catch (err) {
+    console.error('Failed to create tray', err);
   }
 }
 
@@ -106,9 +162,31 @@ app.whenReady().then(async () => {
   });
 
   createWindow();
+  createTray();
+
+  ipcMain.handle('app:show', () => {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      createWindow();
+    }
+    return true;
+  });
+
+  ipcMain.handle('app:quit', () => {
+    isQuitting = true;
+    app.quit();
+    return true;
+  });
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    } else if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
 });
 
