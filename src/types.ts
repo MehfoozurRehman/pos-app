@@ -55,6 +55,16 @@ type Payment = {
   createdAt: string;
 };
 
+type Shop = {
+  id: string;
+  shopId: string;
+  owner: string;
+  name: string;
+  logo: string;
+  location: string;
+  createdAt?: string;
+};
+
 export type DBSchema = {
   notes: Notes[];
   users: User[];
@@ -62,6 +72,7 @@ export type DBSchema = {
   inventory: Inventory[];
   orders: Order[];
   payments: Payment[];
+  shop: Shop[];
   changes: {
     id: string;
     table: keyof DBSchema | string;
