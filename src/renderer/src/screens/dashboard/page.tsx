@@ -18,17 +18,22 @@ import { useIsMobile } from '@renderer/hooks/use-mobile';
 import { useNavigate } from 'react-router';
 
 export default function Dashboard() {
+  const isMobile = useIsMobile();
+
   const cartVisible = useAtomValue(cartVisibilityAtom);
+
   const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
+
+  const width = isMobile ? '100%' : cartVisible ? 'calc(100% - 400px)' : '100%';
 
   const isAnyPanelInvisible = !cartVisible || !orderQueueVisible;
 
   return (
     <motion.div initial={{ paddingRight: 0 }} animate={{ paddingRight: isAnyPanelInvisible ? '50px' : '0px' }} className={`flex gap-4 h-full overflow-hidden`}>
-      <MainPanel>
+      <motion.div initial={{ width }} animate={{ width }} className="flex flex-col justify-end h-full border-r p-4 gap-4">
         <OrderPanel />
         <ProductsPanel />
-      </MainPanel>
+      </motion.div>
       <OrderDetails />
     </motion.div>
   );
@@ -71,20 +76,6 @@ function ProductsPanel() {
           ))}
         </div>
       </ScrollArea>
-    </motion.div>
-  );
-}
-
-function MainPanel({ children }: { children: React.ReactNode }) {
-  const cartVisible = useAtomValue(cartVisibilityAtom);
-
-  const isMobile = useIsMobile();
-
-  const width = isMobile ? '100%' : cartVisible ? 'calc(100% - 400px)' : '100%';
-
-  return (
-    <motion.div initial={{ width }} animate={{ width }} className="flex flex-col justify-end h-full border-r p-4 gap-4">
-      {children}
     </motion.div>
   );
 }
