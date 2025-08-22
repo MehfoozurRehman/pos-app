@@ -1,19 +1,19 @@
 /// <reference types="vite/client" />
-import { electronAPI } from '@electron-toolkit/preload';
-import { DBSchema } from 'src/types';
+import type { IpcRenderer } from 'electron';
+import type { DBSchema } from 'src/types';
 
 type InvokeChannel = {
   'db:get': {
-    args: keyof DBSchema;
-    response: DBSchema[number];
-  };
-  'db:create': {
-    args: [table: keyof DBSchema, item: DBSchema[keyof DBSchema]];
+    args: [table: keyof DBSchema];
     response: DBSchema[keyof DBSchema];
   };
+  'db:create': {
+    args: [table: keyof DBSchema, item: DBSchema[keyof DBSchema][number]];
+    response: DBSchema[keyof DBSchema][number];
+  };
   'db:update': {
-    args: [table: keyof DBSchema, id: string, patch: Partial<DBSchema[keyof DBSchema]>];
-    response: DBSchema[keyof DBSchema] | null;
+    args: [table: keyof DBSchema, id: string, patch: Partial<DBSchema[keyof DBSchema][number]>];
+    response: DBSchema[keyof DBSchema][number] | null;
   };
   'db:delete': {
     args: [table: keyof DBSchema, id: string];
@@ -28,14 +28,18 @@ type InvokeResponse<C extends ChannelName> = InvokeChannel[C] extends { response
 
 declare global {
   interface Window {
-    electron: typeof electronAPI & {
-      ipcRenderer: {
-        invoke<T extends keyof DBSchema>(channel: 'db:get', table: T): Promise<DBSchema[T]>;
+    electron: {
+      // keep existing ipcRenderer members except "invoke", which we type precisely here
+      ipcRenderer: Omit<IpcRenderer, 'invoke'> & {
+        invoke(channel: 'db:get', table: keyof DBSchema): Promise<DBSchema[keyof DBSchema]>;
         invoke<T extends keyof DBSchema>(channel: 'db:create', table: T, item: DBSchema[T][number]): Promise<DBSchema[T][number]>;
         invoke<T extends keyof DBSchema>(channel: 'db:update', table: T, id: string, patch: Partial<DBSchema[T][number]>): Promise<DBSchema[T][number] | null>;
-        invoke<T extends keyof DBSchema>(channel: 'db:delete', table: T, id: string): Promise<boolean>;
-        invoke<C extends ChannelName>(channel: C, ...args: InvokeArgs<C>): Promise<InvokeResponse<C>>;
+        invoke(channel: 'db:delete', table: keyof DBSchema, id: string): Promise<boolean>;
+  // generic fallback: rest param must be an array type; use unknown[] to satisfy TS
+  invoke<C extends ChannelName>(channel: C, ...args: unknown[]): Promise<InvokeResponse<C>>;
       };
     };
   }
 }
+
+export {};
