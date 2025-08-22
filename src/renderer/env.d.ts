@@ -27,6 +27,13 @@ type ChannelName = keyof InvokeChannel;
 type InvokeArgs<C extends ChannelName> = InvokeChannel[C] extends { args: infer A } ? A : never;
 type InvokeResponse<C extends ChannelName> = InvokeChannel[C] extends { response: infer R } ? R : never;
 
+export interface PreloadAPI {
+  app: {
+    show: () => Promise<boolean>;
+    reallyQuit: () => Promise<boolean>;
+  };
+}
+
 declare global {
   interface Window {
     electron: {
@@ -38,6 +45,7 @@ declare global {
         invoke<C extends ChannelName>(channel: C, ...args: unknown[]): Promise<InvokeResponse<C>>;
       };
     };
+    api: PreloadAPI;
   }
 }
 
