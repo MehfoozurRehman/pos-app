@@ -1,6 +1,7 @@
 import type { DBSchema } from 'src/types';
 import { JSONFile } from 'lowdb/node';
 import { Low } from 'lowdb';
+import crypto from 'crypto';
 import fs from 'fs/promises';
 import { ipcMain } from 'electron';
 import os from 'os';
@@ -8,7 +9,10 @@ import path from 'path';
 
 const homeDir = os.homedir();
 const appDataDir = path.join(homeDir, 'pos-app-data');
-const dbFile = path.join(appDataDir, 'db.json');
+
+const obfSuffix = crypto.createHash('sha256').update(appDataDir).digest('hex').slice(0, 8);
+const OBFUSCATED_DB_FILE_NAME = `.pos_${obfSuffix}.local`;
+const dbFile = path.join(appDataDir, OBFUSCATED_DB_FILE_NAME);
 
 let dbInstance: Low<DBSchema> | null = null;
 
