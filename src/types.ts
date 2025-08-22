@@ -62,4 +62,12 @@ export type DBSchema = {
   inventory: Inventory[];
   orders: Order[];
   payments: Payment[];
+  changes: {
+    id: string;
+    table: keyof DBSchema | string;
+    action: 'create' | 'update' | 'delete';
+    itemId: string;
+    timestamp: string;
+    data?: any;
+  }[];
 };
