@@ -161,7 +161,7 @@ function ProductsPanel() {
       initial={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
       animate={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
       transition={{ duration: 0.28 }}
-      className="flex flex-col p-4 bg-card/60 backdrop-blur-sm rounded-lg w-full gap-4"
+      className="flex flex-col p-4 bg-background/50 rounded-lg w-full gap-4"
     >
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Products</h2>
@@ -174,7 +174,7 @@ function ProductsPanel() {
           </Button>
         ))}
       </ScrollContainer>
-      <ScrollArea className={`${orderQueueVisible ? 'max-h-[calc(100vh-565px)]' : 'max-h-[calc(100vh-200px)]'} overflow-y-auto bg-sidebar/50 p-3 rounded-lg`}>
+      <ScrollArea className={`${orderQueueVisible ? 'max-h-[calc(100vh-575px)]' : 'max-h-[calc(100vh-200px)]'} overflow-y-auto bg-sidebar/50 p-3 rounded-lg`}>
         <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -199,7 +199,7 @@ function MainPanel({ children }: { children: React.ReactNode }) {
 
 function ProductCard({ product }: { product: (typeof products)[number] }) {
   return (
-    <Card className="p-0 w-full pb-4 cursor-pointer bg-background/40 hover:bg-background/60 rounded-lg shadow-sm transform hover:scale-[1.01] transition">
+    <Card className="p-0 w-full pb-4 cursor-pointer bg-background/40 hover:bg-background/50 rounded-lg shadow-sm transform hover:scale-[1.01] transition">
       <div className="flex items-center justify-center h-[140px] bg-gradient-to-br from-muted/20 to-muted/5 rounded-t-lg">
         <Image className="text-foreground opacity-80" size={48} />
       </div>
@@ -285,7 +285,6 @@ function OrderCard() {
 function OrderDetails() {
   const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
 
-  // Mock order/cart data
   const order = {
     customerName: 'Hussnain',
     customerPhone: '0300-1234567',
@@ -305,16 +304,14 @@ function OrderDetails() {
         discount: 0,
       },
     ],
-    discount: 10, // order-level discount
+    discount: 10,
   };
 
   const handleRemoveItem = (id: number) => {
-    // TODO: Implement remove item logic (state management)
     alert('Remove item ' + id);
   };
 
   const handleClearCart = () => {
-    // TODO: Implement clear cart logic
     alert('Cart cleared');
   };
 
@@ -331,7 +328,7 @@ function OrderDetails() {
       )}
       <AnimatePresence>
         {cartVisible && (
-          <motion.div className="flex flex-col w-full max-w-[400px] p-4 bg-background/90 rounded-lg shadow-lg border h-full">
+          <motion.div className="flex flex-col w-full max-w-[400px] p-4 bg-background/50 rounded-lg shadow-lg border h-full">
             <div className="flex items-center justify-between mb-4">
               <span className="font-bold text-lg">Order Details</span>
               <Button variant="outline" onClick={() => setCartVisible(false)}>
