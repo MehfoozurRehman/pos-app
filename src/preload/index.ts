@@ -3,13 +3,9 @@ import { electronAPI } from '@electron-toolkit/preload';
 
 const api = {};
 
-declare global {
-  interface Window {
-    electron: typeof electronAPI;
-    api: typeof api;
-  }
-}
-
+// Don't redeclare the global `Window.electron` type here — the renderer's
+// ambient `env.d.ts` already augments `Window`. Use runtime-safe `any`
+// assignments when not exposing via the context bridge to avoid type conflicts.
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI);
@@ -18,6 +14,6 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
-  window.electron = electronAPI;
-  window.api = api;
+  (window as any).electron = electronAPI;
+  (window as any).api = api;
 }
