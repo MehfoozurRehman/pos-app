@@ -179,8 +179,6 @@ function OrderDetails() {
 
   const [selectedOrder, setSelectedOrder] = useAtom(cartAtom);
 
-  console.log(selectedOrder);
-
   const order = {
     customerName: 'Hussnain',
     customerPhone: '0300-1234567',
