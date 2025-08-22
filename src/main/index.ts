@@ -33,7 +33,7 @@ async function getDb(): Promise<Awaited<ReturnType<typeof JSONFilePreset<DBSchem
       inventory: [],
       orders: [],
       payments: [],
-      shop: [],
+      shop: null,
       changes: [],
     });
   }
@@ -137,16 +137,16 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle('db:create', async (_event, key: keyof DBSchema, data: any) => {
-    if (!Array.isArray(db.data[key])) {
-      db.data[key] = [];
-    }
-
     if (key === ('shop' as keyof DBSchema)) {
       if (data && data.shopId && !data.id) data.id = data.shopId;
       if (data && !data.createdAt) data.createdAt = new Date().toISOString();
+      db.data.shop = data;
+    } else {
+      if (!Array.isArray(db.data[key])) {
+        db.data[key] = [] as any;
+      }
+      (db.data[key] as any[]).push(data);
     }
-
-    db.data[key].push(data);
     if (!Array.isArray(db.data.changes)) {
       db.data.changes = [];
     }
@@ -163,6 +163,23 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle('db:update', async (_event, key: keyof DBSchema, id: string, patch: any) => {
+    if (key === ('shop' as keyof DBSchema)) {
+      const before = db.data.shop ? { ...(db.data.shop as any) } : null;
+      if (!before) return null;
+      db.data.shop = { ...(db.data.shop as any), ...patch } as any;
+      const after = db.data.shop as any;
+      db.data.changes.push({
+        id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+        table: key as string,
+        action: 'update',
+        itemId: after.id || after.shopId || '',
+        timestamp: new Date().toISOString(),
+        data: { before, after, patch },
+      });
+      await db.write();
+      return after;
+    }
+
     const table = db.data[key] as any[];
     const idx = table.findIndex((t) => t && (t as any).id === id);
     if (idx === -1) return null;
@@ -182,11 +199,28 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle('db:delete', async (_event, key: keyof DBSchema, id: string) => {
+    if (key === ('shop' as keyof DBSchema)) {
+      const itemToDelete = db.data.shop;
+      if (!itemToDelete) return false;
+      db.data.shop = null;
+      db.data.changes.push({
+        id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+        table: key as string,
+        action: 'delete',
+        itemId: (itemToDelete as any).id || (itemToDelete as any).shopId || '',
+        timestamp: new Date().toISOString(),
+        data: itemToDelete,
+      });
+      await db.write();
+      return true;
+    }
+
     const table = db.data[key] as any[];
     const initialLen = table.length;
     const itemToDelete = table.find((t) => t && (t as any).id === id);
-    db.data[key] = table.filter((t) => !(t && (t as any).id === id)) as any;
-    const changed = db.data[key].length !== initialLen;
+    const newTable = table.filter((t) => !(t && (t as any).id === id));
+    db.data[key] = newTable as any;
+    const changed = newTable.length !== initialLen;
     if (changed) {
       db.data.changes.push({
         id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
