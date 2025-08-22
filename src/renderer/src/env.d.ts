@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+
 import type { IpcRenderer } from 'electron';
 import type { DBSchema } from 'src/types';
 
@@ -29,14 +30,12 @@ type InvokeResponse<C extends ChannelName> = InvokeChannel[C] extends { response
 declare global {
   interface Window {
     electron: {
-      // keep existing ipcRenderer members except "invoke", which we type precisely here
       ipcRenderer: Omit<IpcRenderer, 'invoke'> & {
         invoke(channel: 'db:get', table: keyof DBSchema): Promise<DBSchema[keyof DBSchema]>;
         invoke<T extends keyof DBSchema>(channel: 'db:create', table: T, item: DBSchema[T][number]): Promise<DBSchema[T][number]>;
         invoke<T extends keyof DBSchema>(channel: 'db:update', table: T, id: string, patch: Partial<DBSchema[T][number]>): Promise<DBSchema[T][number] | null>;
         invoke(channel: 'db:delete', table: keyof DBSchema, id: string): Promise<boolean>;
-  // generic fallback: rest param must be an array type; use unknown[] to satisfy TS
-  invoke<C extends ChannelName>(channel: C, ...args: unknown[]): Promise<InvokeResponse<C>>;
+        invoke<C extends ChannelName>(channel: C, ...args: unknown[]): Promise<InvokeResponse<C>>;
       };
     };
   }
