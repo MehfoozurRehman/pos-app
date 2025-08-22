@@ -7,7 +7,7 @@
     "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
+  "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
@@ -16,13 +16,23 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "types": ["node", "electron-vite/node"]
+    "types": ["node", "electron", "electron-vite/node", "vite/client"]
   },
   "include": [
     "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.tsx",
-  "src/main/**/*",
+    "src/main/**/*",
+    "src/preload/**/*",
     "electron.vite.config.*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "out",
+    "build",
+    "**/dist/**",
+    "**/out/**",
+    "**/build/**"
   ]
 }
