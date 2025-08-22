@@ -72,7 +72,7 @@ export type DBSchema = {
   inventory: Inventory[];
   orders: Order[];
   payments: Payment[];
-  shop: Shop[];
+  shop: Shop | null;
   changes: {
     id: string;
     table: keyof DBSchema | string;
