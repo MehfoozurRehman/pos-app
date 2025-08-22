@@ -11,6 +11,8 @@ export default function Login() {
         <LoginForm />
         <button
           onClick={async () => {
+            const shop = await window.api.db.get('shop');
+            console.log(shop);
             const notes = await window.api.db.get('notes');
             console.warn(notes);
           }}
