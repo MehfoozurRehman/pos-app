@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { BoxIcon, EyeIcon, Image } from 'lucide-react';
-import { cartVisibilityAtom, orderQueueVisibilityAtom } from '@renderer/state';
+import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@renderer/state';
 import { orders, products } from '@renderer/data';
 import { useAtom, useAtomValue } from 'jotai/react';
 import { useEffect, useState } from 'react';
@@ -53,9 +53,9 @@ function ProductsPanel() {
   return (
     <motion.div
       layout
+      transition={{ duration: 0.28 }}
       initial={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
       animate={{ height: orderQueueVisible ? 'calc(100% - 300px)' : '100%' }}
-      transition={{ duration: 0.28 }}
       className="flex flex-col p-4 bg-background/30 rounded-lg w-full gap-4"
     >
       <div className="flex items-center justify-between">
@@ -147,8 +147,10 @@ function OrderPanel() {
 }
 
 function OrderCard({ order }: { order: (typeof orders)[number] }) {
+  const [selectedOrder, setSelectedOrder] = useAtom(cartAtom);
+
   return (
-    <Card className="p-0 min-w-[250px] gap-4 pb-4 cursor-pointer bg-background/30 hover:bg-background">
+    <Card onClick={() => setSelectedOrder(order)} className={`p-0 min-w-[250px] gap-4 pb-4 cursor-pointer bg-background/30 hover:bg-background`}>
       <div className="font-bold border-b p-3">#{order.orderId}</div>
       <div className="px-4 flex flex-col gap-4">
         <div className="font-bold">{order.customerName}</div>
@@ -163,9 +165,9 @@ function OrderCard({ order }: { order: (typeof orders)[number] }) {
 }
 
 function OrderDetails() {
-  const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
-
   const isMobile = useIsMobile();
+
+  const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
 
   useEffect(() => {
     if (isMobile) {
@@ -174,6 +176,10 @@ function OrderDetails() {
       setCartVisible(true);
     }
   }, [isMobile]);
+
+  const [selectedOrder, setSelectedOrder] = useAtom(cartAtom);
+
+  console.log(selectedOrder);
 
   const order = {
     customerName: 'Hussnain',
@@ -245,7 +251,7 @@ function OrderDetails() {
               <div className="flex flex-col gap-2">
                 {order.items.map((item) => (
                   <Card key={item.id} className="flex items-center justify-between p-2 bg-card/60">
-                    <div>
+                    {/* <div>
                       <div className="font-medium text-sm">{item.name}</div>
                       <div className="text-xs text-muted-foreground">Barcode: {item.barcode}</div>
                       {item.discount ? <div className="text-xs text-green-600">Discount: Rs. {item.discount}</div> : null}
@@ -255,7 +261,7 @@ function OrderDetails() {
                       <Button size="icon" variant="ghost" onClick={() => handleRemoveItem(item.id)} title="Remove">
                         ×
                       </Button>
-                    </div>
+                    </div> */}
                   </Card>
                 ))}
               </div>
