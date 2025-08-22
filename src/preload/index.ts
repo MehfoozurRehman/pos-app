@@ -1,7 +1,17 @@
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
+
 import { electronAPI } from '@electron-toolkit/preload';
 
-const api = {};
+const api = {
+  app: {
+    show: async () => {
+      return await ipcRenderer.invoke('app:show');
+    },
+    reallyQuit: async () => {
+      return await ipcRenderer.invoke('app:quit');
+    },
+  },
+};
 
 if (process.contextIsolated) {
   try {
