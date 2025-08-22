@@ -198,7 +198,6 @@ app.whenReady().then(async () => {
     const since = new Date(sinceIso);
     if (Number.isNaN(since.getTime())) return [];
 
-    // raw changes after `since`, optionally filtered by table, sorted oldest -> newest
     const raw = (db.data.changes || [])
       .filter((c) => {
         const t = new Date(c.timestamp);
@@ -218,7 +217,6 @@ app.whenReady().then(async () => {
       data?: any;
     };
 
-    // Group by table + itemId (fallback to change id when itemId is empty)
     const groups = new Map<string, ChangeEntry[]>();
     for (const c of raw as ChangeEntry[]) {
       const key = `${c.table}::${c.itemId || c.id}`;
@@ -228,17 +226,14 @@ app.whenReady().then(async () => {
 
     const condensed: ChangeEntry[] = [];
     for (const [, seq] of groups) {
-      const first = seq[0];
       const last = seq[seq.length - 1];
       const hadCreate = seq.some((s) => s.action === 'create');
 
-      // If an item was created then deleted within the window, it's a no-op -> drop it
       if (last.action === 'delete' && hadCreate) {
         continue;
       }
 
       if (last.action === 'delete') {
-        // Deleted (and not created in-window)
         condensed.push({
           id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
           table: last.table,
@@ -251,7 +246,6 @@ app.whenReady().then(async () => {
       }
 
       if (last.action === 'create') {
-        // Only created in window and never deleted afterwards
         condensed.push({
           id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
           table: last.table,
@@ -265,14 +259,8 @@ app.whenReady().then(async () => {
 
       if (last.action === 'update') {
         if (hadCreate) {
-          // Created then updated -> return a single create with the final state
-          // prefer the last update's `after` payload, fallback to last.create data
-          const finalAfter = [...seq]
-            .reverse()
-            .find((s) => s.action === 'update' && s.data && s.data.after)?.data.after
-            || [...seq].reverse().find((s) => s.action === 'create')?.data
-            || last.data?.after
-            || last.data;
+          const finalAfter =
+            [...seq].reverse().find((s) => s.action === 'update' && s.data && s.data.after)?.data.after || [...seq].reverse().find((s) => s.action === 'create')?.data || last.data?.after || last.data;
 
           condensed.push({
             id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
@@ -283,13 +271,8 @@ app.whenReady().then(async () => {
             data: finalAfter,
           });
         } else {
-          // Only updates in window -> collapse into one update with before/after
-          const firstBefore = seq.find((s) => s.action === 'update' && s.data && s.data.before)?.data.before
-            || seq[0].data?.before
-            || null;
-          const lastAfter = [...seq].reverse().find((s) => s.action === 'update' && s.data && s.data.after)?.data.after
-            || last.data?.after
-            || last.data;
+          const firstBefore = seq.find((s) => s.action === 'update' && s.data && s.data.before)?.data.before || seq[0].data?.before || null;
+          const lastAfter = [...seq].reverse().find((s) => s.action === 'update' && s.data && s.data.after)?.data.after || last.data?.after || last.data;
 
           condensed.push({
             id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
