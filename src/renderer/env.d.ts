@@ -20,6 +20,17 @@ type InvokeChannel = {
     args: [table: keyof DBSchema, id: string];
     response: boolean;
   };
+  'db:changes-since': {
+    args: [sinceIso: string, table?: string];
+    response: {
+      id: string;
+      table: string;
+      action: 'create' | 'update' | 'delete';
+      itemId: string;
+      timestamp: string;
+      data?: any;
+    }[];
+  };
 };
 
 type ChannelName = keyof InvokeChannel;
@@ -31,6 +42,25 @@ export interface PreloadAPI {
   app: {
     show: () => Promise<boolean>;
     reallyQuit: () => Promise<boolean>;
+  };
+  db: {
+    get: (table: keyof DBSchema) => Promise<DBSchema[keyof DBSchema]>;
+    create: <T extends keyof DBSchema>(table: T, item: DBSchema[T][number]) => Promise<DBSchema[T][number]>;
+    update: <T extends keyof DBSchema>(table: T, id: string, patch: Partial<DBSchema[T][number]>) => Promise<DBSchema[T][number] | null>;
+    delete: (table: keyof DBSchema, id: string) => Promise<boolean>;
+    changesSince: (
+      sinceIso: string,
+      table?: string,
+    ) => Promise<
+      {
+        id: string;
+        table: string;
+        action: 'create' | 'update' | 'delete';
+        itemId: string;
+        timestamp: string;
+        data?: any;
+      }[]
+    >;
   };
 }
 
