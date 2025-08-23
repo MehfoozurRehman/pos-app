@@ -48,13 +48,13 @@ function ProductsPanel() {
 
   const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
 
-  const tags = useMemo(() => Array.from(new Set((products || []).flatMap((p: any) => p.categories || []))), [products]);
+  const tags = useMemo(() => Array.from(new Set((products || []).flatMap((p) => p.categories || []))), [products]);
 
   const [query, setQuery] = useState('');
 
   const filteredProducts = useMemo(() => {
     const list = products || [];
-    return list.filter((product: any) => {
+    return list.filter((product) => {
       if (selectedTag !== 'All' && !(product.categories || []).includes(selectedTag)) return false;
       if (query.trim()) {
         const q = query.toLowerCase();
@@ -74,7 +74,7 @@ function ProductsPanel() {
     >
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Products</h2>
-        <Input value={query} onChange={(e: any) => setQuery(e.target.value)} type="search" placeholder="Search products" className="max-w-[300px]" />
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} type="search" placeholder="Search products" className="max-w-[300px]" />
       </div>
       <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
         {['All', ...tags].map((product) => (
