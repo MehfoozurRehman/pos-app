@@ -16,6 +16,7 @@ import Products from './screens/dashboard/products/page';
 import Settings from './screens/dashboard/settings/page';
 import { StrictMode } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from './components/ui/sonner';
 import { createRoot } from 'react-dom/client';
 
 const router = createHashRouter([
@@ -74,6 +75,7 @@ const router = createHashRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
+      <Toaster />
       <RouterProvider router={router} />
     </ThemeProvider>
   </StrictMode>,
