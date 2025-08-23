@@ -18,31 +18,33 @@ const items = Array.from({ length: 12 }).map((_, i) => ({
 export default function Inventory() {
   return (
     <div className="px-4 lg:px-6 py-4 space-y-4">
-      <div className="grid gap-3 @[900px]:grid-cols-4">
-        <div className="flex flex-col gap-1 @[900px]:col-span-2">
-          <Label>Search</Label>
-          <Input placeholder="Search SKU or product" />
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-end md:gap-4 flex-1">
+          <div className="flex flex-col gap-1 lg:col-span-2 flex-1">
+            <Label>Search</Label>
+            <Input placeholder="Search SKU or product" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>Category</Label>
+            <Select defaultValue="all">
+              <SelectTrigger>
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="CPU">CPU</SelectItem>
+                <SelectItem value="GPU">GPU</SelectItem>
+                <SelectItem value="Memory">Memory</SelectItem>
+                <SelectItem value="Storage">Storage</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <Label>Category</Label>
-          <Select defaultValue="all">
-            <SelectTrigger>
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="CPU">CPU</SelectItem>
-              <SelectItem value="GPU">GPU</SelectItem>
-              <SelectItem value="Memory">Memory</SelectItem>
-              <SelectItem value="Storage">Storage</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-end gap-2">
-          <Button variant="outline" className="w-full @[900px]:w-fit">
+        <div className="flex flex-1 items-end justify-end gap-2">
+          <Button variant="outline" className="w-full lg:w-fit">
             <IconFilter /> Filters
           </Button>
-          <Button className="w-full @[900px]:w-fit">
+          <Button className="w-full lg:w-fit">
             <IconPlus /> Add Item
           </Button>
         </div>
