@@ -1,3 +1,3 @@
 export default function Help() {
-  return <div className="px-6 py-4">Help</div>;
+  return <div className="p-8 text-center text-xl">Help</div>;
 }
