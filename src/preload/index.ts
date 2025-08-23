@@ -28,16 +28,6 @@ const api = {
       return await ipcRenderer.invoke('db:changes-since', sinceIso, table);
     },
   },
-  saveImage: async (file: File, filename: string) => {
-    const buffer = await file.arrayBuffer();
-    return await ipcRenderer.invoke('save-image', Buffer.from(buffer), filename);
-  },
-  getImagePath: async (relativePath: string) => {
-    return await ipcRenderer.invoke('get-image-path', relativePath);
-  },
-  getImagesForSync: async () => {
-    return await ipcRenderer.invoke('get-images-for-sync');
-  },
 };
 
 if (process.contextIsolated) {

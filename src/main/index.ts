@@ -1,10 +1,9 @@
 import { BrowserWindow, Menu, Tray, app, ipcMain, nativeImage, screen, shell } from 'electron';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import fs from 'fs';
-import path from 'path';
 
 import { dbModule } from './db.ts';
 import icon from '../../resources/icon.png?asset';
+import path from 'path';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -118,76 +117,6 @@ app.whenReady().then(async () => {
     isQuitting = true;
     app.quit();
     return true;
-  });
-
-  // Image handling
-  ipcMain.handle('save-image', async (_, buffer: Buffer, filename: string) => {
-    try {
-      // Get the database directory (same as where db.json is stored)
-      const dbPath = path.join(app.getPath('userData'), 'db.json');
-      const dbDir = path.dirname(dbPath);
-      const imagesDir = path.join(dbDir, 'images');
-
-      // Create images directory if it doesn't exist
-      if (!fs.existsSync(imagesDir)) {
-        fs.mkdirSync(imagesDir, { recursive: true });
-      }
-
-      // Save the image file
-      const imagePath = path.join(imagesDir, filename);
-      fs.writeFileSync(imagePath, buffer);
-
-      // Return the relative path for storage in database
-      return `images/${filename}`;
-    } catch (error) {
-      console.error('Error saving image:', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('get-image-path', async (_, relativePath: string) => {
-    try {
-      const dbPath = path.join(app.getPath('userData'), 'db.json');
-      const dbDir = path.dirname(dbPath);
-      const fullPath = path.join(dbDir, relativePath);
-
-      if (fs.existsSync(fullPath)) {
-        return `file://${fullPath}`;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error getting image path:', error);
-      return null;
-    }
-  });
-
-  ipcMain.handle('get-images-for-sync', async () => {
-    try {
-      const dbPath = path.join(app.getPath('userData'), 'db.json');
-      const dbDir = path.dirname(dbPath);
-      const imagesDir = path.join(dbDir, 'images');
-
-      if (!fs.existsSync(imagesDir)) {
-        return [];
-      }
-
-      const imageFiles = fs.readdirSync(imagesDir);
-      const images = imageFiles.map((filename) => {
-        const fullPath = path.join(imagesDir, filename);
-        const buffer = fs.readFileSync(fullPath);
-        return {
-          filename,
-          relativePath: `images/${filename}`,
-          buffer: buffer.toString('base64'),
-          size: buffer.length,
-        };
-      });
-
-      return images;
-    } catch (error) {
-      console.error('Error getting images for sync:', error);
-      return [];
-    }
   });
 
   app.on('activate', function () {

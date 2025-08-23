@@ -21,7 +21,6 @@ const DEFAULT_DB: DBSchema = {
   products: [],
   inventory: [],
   orders: [],
-  customers: [],
   shop: null,
   changes: [],
 };
