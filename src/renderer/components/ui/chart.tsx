@@ -10,7 +10,7 @@ import * as RechartsPrimitive from 'recharts';
 
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const THEMES = { light: '', dark: '.dark' } as const;
 

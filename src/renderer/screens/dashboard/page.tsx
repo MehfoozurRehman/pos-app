@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { BoxIcon, EyeIcon, Image } from 'lucide-react';
-import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@renderer/state';
-import { orders, products } from '@renderer/data';
+import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@/constants/state';
+import { orders, products } from '@/constants/data';
 import { useAtom, useAtomValue } from 'jotai/react';
 import { useEffect, useState } from 'react';
 

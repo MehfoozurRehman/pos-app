@@ -1,4 +1,4 @@
-import { cn } from '@renderer/lib/utils';
+import { cn } from '@/utils';
 import { useRef } from 'react';
 
 export function ScrollContainer({

@@ -12,7 +12,7 @@ import { PanelLeftIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Slot } from '@radix-ui/react-slot';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
