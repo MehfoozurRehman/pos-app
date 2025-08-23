@@ -10,8 +10,8 @@ export type Product = {
   name: string;
   description: string;
   categories: string[];
-  picture: string; // Can be local filename or remote URL
-  pictureUrl?: string; // Remote URL when synced
+  picture: string;
+  pictureUrl?: string;
   createdAt: string;
 };
 
@@ -46,8 +46,8 @@ export type Shop = {
   shopId: string;
   owner: string;
   name: string;
-  logo: string; // Can be local filename or remote URL
-  logoUrl?: string; // Remote URL when synced
+  logo: string;
+  logoUrl?: string;
   location: string;
   createdAt?: string;
 };
