@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { BoxIcon, EyeIcon, Image } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@/constants/state';
 import { useAtom, useAtomValue } from 'jotai/react';
 import { useEffect, useMemo, useState } from 'react';
@@ -105,12 +105,12 @@ function ProductsPanel() {
 
 function ProductCard({ product }: { product: any }) {
   const [, setCart] = useAtom(cartAtom);
-  const [showAddSheet, setShowAddSheet] = useState(false);
+  const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [barcode, setBarcode] = useState('');
 
   const openAdd = () => {
     setBarcode('');
-    setShowAddSheet(true);
+    setShowAddDrawer(true);
   };
 
   const handleAdd = async () => {
@@ -140,7 +140,7 @@ function ProductCard({ product }: { product: any }) {
       return draft;
     });
 
-    setShowAddSheet(false);
+    setShowAddDrawer(false);
   };
 
   return (
@@ -167,15 +167,15 @@ function ProductCard({ product }: { product: any }) {
         </div>
       </Card>
 
-      <Sheet open={showAddSheet} onOpenChange={setShowAddSheet}>
-        <SheetContent side="bottom">
-          <SheetHeader>
-            <SheetTitle>Scan or enter barcode</SheetTitle>
-          </SheetHeader>
+      <Drawer open={showAddDrawer} onOpenChange={setShowAddDrawer}>
+        <DrawerContent side="bottom">
+          <DrawerHeader>
+            <DrawerTitle>Scan or enter barcode</DrawerTitle>
+          </DrawerHeader>
           <div className="p-4">
             <Input value={barcode} onChange={(e: any) => setBarcode(e.target.value)} placeholder="Barcode" />
             <div className="flex gap-2 mt-4">
-              <Button onClick={() => setShowAddSheet(false)} variant="outline" className="flex-1">
+              <Button onClick={() => setShowAddDrawer(false)} variant="outline" className="flex-1">
                 Cancel
               </Button>
               <Button onClick={handleAdd} className="flex-1">
@@ -183,8 +183,8 @@ function ProductCard({ product }: { product: any }) {
               </Button>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
