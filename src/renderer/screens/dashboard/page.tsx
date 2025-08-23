@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { BoxIcon, EyeIcon, Image } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@/constants/state';
-import { orders, products } from '@/constants/data';
 import { useAtom, useAtomValue } from 'jotai/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
@@ -42,18 +42,27 @@ export default function Dashboard() {
 
 function ProductsPanel() {
   const [parent] = useAutoAnimate();
-
-  const { data } = useSWR('products', () => window.api.db.get('products'));
-
-  console.log(data);
+  const { data: products } = useSWR('products', () => window.api.db.get('products'));
 
   const [selectedTag, setSelectedTag] = useState<string>('All');
 
   const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
 
-  const tags = Array.from(new Set(products.flatMap((product) => product.categories)));
+  const tags = useMemo(() => Array.from(new Set((products || []).flatMap((p: any) => p.categories || []))), [products]);
 
-  const filteredProducts = products.filter((product) => selectedTag === 'All' || product.categories.includes(selectedTag as (typeof product.categories)[number]));
+  const [query, setQuery] = useState('');
+
+  const filteredProducts = useMemo(() => {
+    const list = products || [];
+    return list.filter((product: any) => {
+      if (selectedTag !== 'All' && !(product.categories || []).includes(selectedTag)) return false;
+      if (query.trim()) {
+        const q = query.toLowerCase();
+        return (product.name || '').toLowerCase().includes(q) || (product.description || '').toLowerCase().includes(q) || (product.id || '').toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [products, selectedTag, query]);
 
   return (
     <motion.div
@@ -65,7 +74,7 @@ function ProductsPanel() {
     >
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Products</h2>
-        <Input type="search" placeholder="Search products" className="max-w-[300px]" />
+        <Input value={query} onChange={(e: any) => setQuery(e.target.value)} type="search" placeholder="Search products" className="max-w-[300px]" />
       </div>
       <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
         {['All', ...tags].map((product) => (
@@ -75,39 +84,108 @@ function ProductsPanel() {
         ))}
       </ScrollContainer>
       <ScrollArea className={`${orderQueueVisible ? 'max-h-[calc(100vh-575px)]' : 'max-h-[calc(100vh-250px)]'} overflow-y-auto bg-sidebar/50 p-3 rounded-lg`}>
-        <div ref={parent} className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {!products || filteredProducts.length === 0 ? (
+          <div className="flex items-center justify-center p-8">
+            <Card className="p-6 text-center bg-card/50">
+              <div className="text-lg font-semibold mb-2">No products found</div>
+              <div className="text-sm text-muted-foreground">Try changing the search or add products to the inventory.</div>
+            </Card>
+          </div>
+        ) : (
+          <div ref={parent} className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+            {filteredProducts.map((product: any) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </ScrollArea>
     </motion.div>
   );
 }
 
-function ProductCard({ product }: { product: (typeof products)[number] }) {
+function ProductCard({ product }: { product: any }) {
+  const [, setCart] = useAtom(cartAtom);
+  const [showAddSheet, setShowAddSheet] = useState(false);
+  const [barcode, setBarcode] = useState('');
+
+  const openAdd = () => {
+    setBarcode('');
+    setShowAddSheet(true);
+  };
+
+  const handleAdd = async () => {
+    // For now, barcode entry only. We'll check inventory for this barcode
+    const inv = await window.api.db.get('inventory');
+    const found = (inv || []).find((i: any) => i.barcode === barcode || i.product === product.id);
+
+    if (!found) {
+      alert('Item not found in inventory');
+      return;
+    }
+
+    // create or update a draft order in cartAtom
+    setCart((prev: any) => {
+      const draft = prev || {
+        id: undefined,
+        orderId: `#draft-${Date.now()}`,
+        status: 'draft',
+        customerName: '',
+        customerPhone: '',
+        items: [],
+        discount: 0,
+        createdAt: new Date().toISOString(),
+      };
+
+      draft.items = [...(draft.items || []), { productId: product.id, barcode: found.barcode, discount: 0 }];
+      return draft;
+    });
+
+    setShowAddSheet(false);
+  };
+
   return (
-    <Card className="p-0 w-full pb-4 cursor-pointer bg-background/40 hover:bg-background/30 rounded-lg shadow-sm transform hover:scale-[1.01] transition gap-2">
-      <div className="flex items-center justify-center h-[140px] bg-gradient-to-br from-muted/20 to-muted/5 rounded-t-lg">
-        <ImageWithFallback src={product.picture} alt={product.name} className="w-full h-full object-cover" fallback={<Image className="text-foreground opacity-80" size={48} />} />
-      </div>
-      <div className="flex flex-col gap-2 px-4 py-3">
-        <div className="font-semibold text-sm leading-tight line-clamp-2">{product.name}</div>
-        <div className="text-foreground font-medium">Rs. {product.averagePrice}</div>
-        <div className="flex gap-2 flex-wrap">
-          {product.categories.map((tag) => (
-            <Badge variant="outline" key={tag}>
-              {tag}
-            </Badge>
-          ))}
+    <>
+      <Card className="p-0 w-full pb-4 cursor-pointer bg-background/40 hover:bg-background/30 rounded-lg shadow-sm transform hover:scale-[1.01] transition gap-2">
+        <div className="flex items-center justify-center h-[140px] bg-gradient-to-br from-muted/20 to-muted/5 rounded-t-lg">
+          <ImageWithFallback src={product.picture} alt={product.name} className="w-full h-full object-cover" fallback={<Image className="text-foreground opacity-80" size={48} />} />
         </div>
-      </div>
-      <div className="border-t pt-3 flex justify-end pr-4">
-        <Button variant="outline" size="sm" className="w-fit">
-          Add to Order
-        </Button>
-      </div>
-    </Card>
+        <div className="flex flex-col gap-2 px-4 py-3">
+          <div className="font-semibold text-sm leading-tight line-clamp-2">{product.name}</div>
+          <div className="text-foreground font-medium">Rs. {product.averagePrice}</div>
+          <div className="flex gap-2 flex-wrap">
+            {(product.categories || []).map((tag: string) => (
+              <Badge variant="outline" key={tag}>
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+        <div className="border-t pt-3 flex justify-end pr-4">
+          <Button variant="outline" size="sm" className="w-fit" onClick={openAdd}>
+            Add to Order
+          </Button>
+        </div>
+      </Card>
+
+      <Sheet open={showAddSheet} onOpenChange={setShowAddSheet}>
+        <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle>Scan or enter barcode</SheetTitle>
+          </SheetHeader>
+          <div className="p-4">
+            <Input value={barcode} onChange={(e: any) => setBarcode(e.target.value)} placeholder="Barcode" />
+            <div className="flex gap-2 mt-4">
+              <Button onClick={() => setShowAddSheet(false)} variant="outline" className="flex-1">
+                Cancel
+              </Button>
+              <Button onClick={handleAdd} className="flex-1">
+                Add
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
 
@@ -140,9 +218,7 @@ function OrderPanel() {
               </div>
             </div>
             <ScrollContainer containerClassName="bg-sidebar/50 p-2 rounded-lg" childrenClassName="flex gap-2">
-              {orders.map((order) => (
-                <OrderCard key={order.id} order={order} />
-              ))}
+              <OrderQueue />
             </ScrollContainer>
           </div>
         )}
@@ -151,7 +227,31 @@ function OrderPanel() {
   );
 }
 
-function OrderCard({ order }: { order: (typeof orders)[number] }) {
+function OrderQueue() {
+  const { data: orders } = useSWR('orders', () => window.api.db.get('orders')) as any;
+  // orders may be undefined initially
+  const list = (orders || []).filter((o: any) => (o.status || 'draft') === 'draft' || (o.status || 'draft') === 'pending');
+  if (!orders || list.length === 0) {
+    return (
+      <div className="w-full p-4">
+        <Card className="p-4 text-center bg-card/50">
+          <div className="text-md font-semibold mb-1">No orders in queue</div>
+          <div className="text-sm text-muted-foreground">Start a new draft by adding products to the cart.</div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {list.map((order: any) => (
+        <OrderCard key={order.id} order={order} />
+      ))}
+    </>
+  );
+}
+
+function OrderCard({ order }: { order: any }) {
   const [selectedOrder, setSelectedOrder] = useAtom(cartAtom);
 
   return (
