@@ -26,6 +26,11 @@ const data = {
       icon: IconListDetails,
     },
     {
+      title: 'Products',
+      url: '/dashboard/products',
+      icon: IconFolder,
+    },
+    {
       title: 'Inventory',
       url: '/dashboard/inventory',
       icon: IconFolder,
