@@ -320,7 +320,6 @@ export const dbModule = async () => {
     }
   });
 
-  // Media handling functions
   ipcMain.removeHandler('media:save');
   ipcMain.handle('media:save', async (_event, data: Buffer | Uint8Array, filename: string) => {
     try {
@@ -334,14 +333,11 @@ export const dbModule = async () => {
         throw new Error('Invalid data or filename');
       }
 
-      // Ensure media directory exists
       await fs.mkdir(mediaDir, { recursive: true });
 
-      // Convert Uint8Array to Buffer if needed
       const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
       console.log('Buffer created, size:', buffer.length);
 
-      // Generate unique filename to avoid conflicts
       const ext = path.extname(filename);
       const name = path.basename(filename, ext);
       const uniqueId = genId();
@@ -352,7 +348,6 @@ export const dbModule = async () => {
       await fs.writeFile(filePath, buffer);
       console.log('File written successfully');
 
-      // Return the relative path from media directory
       return uniqueFilename;
     } catch (err) {
       console.error('media:save error', err);
@@ -369,7 +364,6 @@ export const dbModule = async () => {
 
       const filePath = path.join(mediaDir, filename);
 
-      // Check if file exists
       try {
         await fs.access(filePath);
       } catch {
@@ -419,15 +413,12 @@ export const dbModule = async () => {
       const filePath = path.join(mediaDir, filename);
       console.log('Full file path:', filePath);
 
-      // Check if file exists and read it
       try {
         await fs.access(filePath);
         console.log('File exists, reading file');
 
-        // Read the file and convert to base64 data URL
         const buffer = await fs.readFile(filePath);
 
-        // Determine MIME type from file extension
         const ext = path.extname(filename).toLowerCase();
         let mimeType = 'application/octet-stream';
 
