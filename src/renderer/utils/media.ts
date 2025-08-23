@@ -1,0 +1,159 @@
+/**
+ * Media utilities for handling local and remote media files
+ */
+
+/**
+ * Check if a media path is a local filename (not a URL)
+ */
+export function isLocalMedia(path: string): boolean {
+  if (!path) return false;
+  return !path.startsWith('http') && !path.startsWith('file://') && !path.startsWith('data:');
+}
+
+/**
+ * Check if a media path is a remote URL
+ */
+export function isRemoteMedia(path: string): boolean {
+  if (!path) return false;
+  return path.startsWith('http');
+}
+
+/**
+ * Get the display URL for a media file (local or remote)
+ */
+export async function getMediaUrl(path: string): Promise<string | null> {
+  if (!path) return null;
+  
+  if (isRemoteMedia(path) || path.startsWith('file://') || path.startsWith('data:')) {
+    return path;
+  }
+  
+  if (isLocalMedia(path)) {
+    try {
+      return await window.api.media.getUrl(path);
+    } catch (error) {
+      console.error('Failed to get media URL:', error);
+      return null;
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Prepare media data for sync to remote API
+ * This would convert local media files to base64 or upload them
+ */
+export async function prepareMediaForSync(localPath: string): Promise<{
+  data: string;
+  filename: string;
+  mimeType: string;
+} | null> {
+  if (!localPath || !isLocalMedia(localPath)) {
+    return null;
+  }
+
+  try {
+    const buffer = await window.api.media.get(localPath);
+    const base64 = buffer.toString('base64');
+    
+    // Determine MIME type from file extension
+    const ext = localPath.split('.').pop()?.toLowerCase();
+    let mimeType = 'application/octet-stream';
+    
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        mimeType = 'image/jpeg';
+        break;
+      case 'png':
+        mimeType = 'image/png';
+        break;
+      case 'gif':
+        mimeType = 'image/gif';
+        break;
+      case 'webp':
+        mimeType = 'image/webp';
+        break;
+      case 'svg':
+        mimeType = 'image/svg+xml';
+        break;
+    }
+
+    return {
+      data: base64,
+      filename: localPath,
+      mimeType
+    };
+  } catch (error) {
+    console.error('Failed to prepare media for sync:', error);
+    return null;
+  }
+}
+
+/**
+ * Handle media after sync response
+ * This would update local records with remote URLs
+ */
+export function handleSyncedMedia(localPath: string, remoteUrl: string): {
+  picture: string;
+  pictureUrl: string;
+} {
+  return {
+    picture: localPath, // Keep local path for offline access
+    pictureUrl: remoteUrl // Store remote URL for online access
+  };
+}
+
+/**
+ * Get the best available media URL (prefer remote if available, fallback to local)
+ */
+export async function getBestMediaUrl(localPath?: string, remoteUrl?: string): Promise<string | null> {
+  // Prefer remote URL if available and valid
+  if (remoteUrl && isRemoteMedia(remoteUrl)) {
+    return remoteUrl;
+  }
+  
+  // Fallback to local media
+  if (localPath) {
+    return await getMediaUrl(localPath);
+  }
+  
+  return null;
+}
+
+/**
+ * Clean up orphaned media files
+ * This should be called periodically to remove unused media files
+ */
+export async function cleanupOrphanedMedia(usedMediaFiles: string[]): Promise<void> {
+  // This would require additional API methods to list all media files
+  // and compare with the used files list
+  console.log('Cleanup orphaned media files:', usedMediaFiles);
+  // TODO: Implement when needed
+}
+
+/**
+ * Validate media file
+ */
+export function validateMediaFile(file: File): { valid: boolean; error?: string } {
+  // Check file type
+  if (!file.type.startsWith('image/')) {
+    return { valid: false, error: 'File must be an image' };
+  }
+  
+  // Check file size (5MB max)
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) {
+    return { valid: false, error: 'File size must be less than 5MB' };
+  }
+  
+  // Check file extension
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  if (!extension || !allowedExtensions.includes(extension)) {
+    return { valid: false, error: 'File type not supported' };
+  }
+  
+  return { valid: true };
+}
