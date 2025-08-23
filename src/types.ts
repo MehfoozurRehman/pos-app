@@ -1,11 +1,11 @@
-type Notes = {
+export type Notes = {
   id: string;
   title: string;
   content: string;
   createdAt: string;
 };
 
-type Product = {
+export type Product = {
   id: string;
   name: string;
   description: string;
@@ -14,7 +14,7 @@ type Product = {
   createdAt: string;
 };
 
-type Inventory = {
+export type Inventory = {
   id: string;
   productId: string;
   barcode: string;
@@ -23,13 +23,13 @@ type Inventory = {
   createdAt: string;
 };
 
-type OrderItem = {
+export type OrderItem = {
   productId: string;
   barcode: string;
   discount?: number;
 };
 
-type Order = {
+export type Order = {
   id: string;
   orderId: string;
   status: string;
@@ -40,7 +40,7 @@ type Order = {
   createdAt: string;
 };
 
-type Shop = {
+export type Shop = {
   id: string;
   shopId: string;
   owner: string;
