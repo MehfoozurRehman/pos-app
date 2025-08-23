@@ -18,7 +18,6 @@ export function ImageWithFallback({ fallback, src, localPath, remoteUrl, ...prop
 
   useEffect(() => {
     async function resolveSrc() {
-      // Priority: explicit src > remoteUrl > localPath
       if (src) {
         setResolvedSrc(src);
         return;
