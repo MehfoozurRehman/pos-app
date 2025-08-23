@@ -28,6 +28,20 @@ const api = {
       return await ipcRenderer.invoke('db:changes-since', sinceIso, table);
     },
   },
+  media: {
+    save: async (data: Buffer | Uint8Array, filename: string) => {
+      return await ipcRenderer.invoke('media:save', data, filename);
+    },
+    get: async (filename: string) => {
+      return await ipcRenderer.invoke('media:get', filename);
+    },
+    delete: async (filename: string) => {
+      return await ipcRenderer.invoke('media:delete', filename);
+    },
+    getUrl: async (filename: string) => {
+      return await ipcRenderer.invoke('media:get-url', filename);
+    },
+  },
 };
 
 if (process.contextIsolated) {
