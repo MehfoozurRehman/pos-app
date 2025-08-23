@@ -1,8 +1,10 @@
-import React, { useState, useRef, useCallback } from 'react';
+import { Image as ImageIcon, Loader2, Upload, X } from 'lucide-react';
+import React, { useCallback, useRef, useState } from 'react';
+
 import { Button } from './button';
 import { Card } from './card';
 import { cn } from '@/utils';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ImageUploadProps {
   value?: string;
@@ -10,7 +12,7 @@ interface ImageUploadProps {
   className?: string;
   disabled?: boolean;
   accept?: string;
-  maxSize?: number; // in MB
+  maxSize?: number;
   placeholder?: string;
 }
 
@@ -20,7 +22,6 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load preview when value changes
   React.useEffect(() => {
     async function loadPreview() {
       console.log('Loading preview for value:', value);
@@ -32,7 +33,6 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
       }
 
       try {
-        // If it's a local filename, get the URL
         if (!value.startsWith('http') && !value.startsWith('file://')) {
           console.log('Getting URL for local file:', value);
           const url = await window.api.media.getUrl(value);
@@ -55,15 +55,13 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
     async (file: File) => {
       if (disabled) return;
 
-      // Validate file type
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        toast.error('Please select an image file');
         return;
       }
 
-      // Validate file size
       if (file.size > maxSize * 1024 * 1024) {
-        alert(`File size must be less than ${maxSize}MB`);
+        toast.error(`File size must be less than ${maxSize}MB`);
         return;
       }
 
@@ -72,27 +70,25 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
       try {
         console.log('Starting file upload:', file.name, file.size, file.type);
 
-        // Convert file to buffer
         const arrayBuffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
         console.log('File converted to Uint8Array, size:', uint8Array.length);
 
-        // Check if media API is available
         if (!window.api?.media?.save) {
           throw new Error('Media API not available');
         }
 
-        // Save to media storage
         console.log('Calling media.save...');
+
         const filename = await window.api.media.save(uint8Array, file.name);
+
         console.log('File saved successfully:', filename);
 
-        // Update value
         onChange(filename);
       } catch (error) {
         console.error('Failed to upload image:', error);
-        alert(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         setIsUploading(false);
       }
@@ -142,7 +138,6 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
       if (files && files.length > 0) {
         handleFileUpload(files[0]);
       }
-      // Reset input value to allow selecting the same file again
       e.target.value = '';
     },
     [handleFileUpload],
@@ -154,7 +149,6 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
 
       if (disabled || isUploading) return;
 
-      // Delete the media file if it's a local filename
       if (value && !value.startsWith('http') && !value.startsWith('file://')) {
         try {
           await window.api.media.delete(value);
