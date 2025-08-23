@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IconChartBar, IconDashboard, IconFolder, IconHelp, IconInnerShadowTop, IconListDetails, IconSettings, IconUsers } from '@tabler/icons-react';
+import { IconArchive, IconBoxSeam, IconBuildingStore, IconChartHistogram, IconHelpCircle, IconHome2, IconReceipt2, IconSettings2, IconUsersGroup } from '@tabler/icons-react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 
 import { Link } from 'react-router';
@@ -18,44 +18,44 @@ const data = {
     {
       title: 'Dashboard',
       url: '/dashboard',
-      icon: IconDashboard,
+      icon: IconHome2,
     },
     {
       title: 'Orders',
       url: '/dashboard/orders',
-      icon: IconListDetails,
+      icon: IconReceipt2,
     },
     {
       title: 'Products',
       url: '/dashboard/products',
-      icon: IconFolder,
+      icon: IconBoxSeam,
     },
     {
       title: 'Inventory',
       url: '/dashboard/inventory',
-      icon: IconFolder,
+      icon: IconArchive,
     },
     {
       title: 'Customers',
       url: '/dashboard/customers',
-      icon: IconUsers,
+      icon: IconUsersGroup,
     },
     {
       title: 'Analytics',
       url: '/dashboard/analytics',
-      icon: IconChartBar,
+      icon: IconChartHistogram,
     },
   ],
   navSecondary: [
     {
       title: 'Settings',
       url: '/dashboard/settings',
-      icon: IconSettings,
+      icon: IconSettings2,
     },
     {
       title: 'Get Help',
       url: '/dashboard/help',
-      icon: IconHelp,
+      icon: IconHelpCircle,
     },
   ],
 };
@@ -68,7 +68,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <Link to="/dashboard">
-                <IconInnerShadowTop className="!size-5" />
+                <IconBuildingStore className="!size-5" />
                 <span className="text-base font-semibold">Acme Inc.</span>
               </Link>
             </SidebarMenuButton>
