@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
 import { Card } from '@renderer/components/ui/card';
-import { ImageWithFallback } from '../../components/image-fallback';
+import { ImageWithFallback } from '@/components/image-fallback';
 import { Input } from '@renderer/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ScrollContainer } from '@/components/scroll-container';
