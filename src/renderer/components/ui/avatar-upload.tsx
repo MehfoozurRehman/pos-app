@@ -131,8 +131,6 @@ export function AvatarUpload({ value, onChange, className, disabled = false, siz
             </>
           )}
         </Avatar>
-
-        {/* Overlay buttons on hover */}
         {!isUploading && (
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center">
             <div className="flex gap-1">
@@ -148,8 +146,6 @@ export function AvatarUpload({ value, onChange, className, disabled = false, siz
           </div>
         )}
       </div>
-
-      {/* Upload hint */}
       <p className="text-xs text-muted-foreground text-center mt-2">Click to upload</p>
     </div>
   );
