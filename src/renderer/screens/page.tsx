@@ -9,46 +9,6 @@ export default function Login() {
       </div>
       <div className="w-full max-w-sm">
         <LoginForm />
-        {/* <button
-          onClick={async () => {
-            const shop = await window.api.db.get('shop');
-            console.log(shop);
-            const notes = await window.api.db.get('notes');
-            console.warn(notes);
-          }}
-        >
-          get notes
-        </button>
-        <button
-          onClick={async () => {
-            await window.api.db.create('notes', {
-              id: '1',
-              title: 'hello',
-              content: 'Welcome to the POS App!',
-              createdAt: new Date().toISOString(),
-            });
-          }}
-        >
-          create note
-        </button>
-        <button
-          onClick={async () => {
-            const updated = await window.api.db.update('notes', '1', {
-              title: 'test',
-            });
-            console.warn('updated', updated);
-          }}
-        >
-          update note
-        </button>
-        <button
-          onClick={async () => {
-            const removed = await window.api.db.delete('notes', '1');
-            console.warn('removed', removed);
-          }}
-        >
-          delete note
-        </button> */}
       </div>
     </div>
   );
