@@ -9,6 +9,7 @@ import path from 'path';
 
 const homeDir = os.homedir();
 const appDataDir = path.join(homeDir, 'pos-app-data');
+const mediaDir = path.join(appDataDir, 'media');
 
 const obfSuffix = crypto.createHash('sha256').update(appDataDir).digest('hex').slice(0, 8);
 const OBFUSCATED_DB_FILE_NAME = `.pos_${obfSuffix}.local`;
@@ -32,6 +33,7 @@ async function getDb(): Promise<Low<DBSchema>> {
 
   try {
     await fs.mkdir(appDataDir, { recursive: true });
+    await fs.mkdir(mediaDir, { recursive: true });
   } catch (err) {
     console.error('Failed to ensure app data directory exists', err);
     throw err;
@@ -315,6 +317,151 @@ export const dbModule = async () => {
     } catch (err) {
       console.error('db:changes-since error', err);
       throw err;
+    }
+  });
+
+  // Media handling functions
+  ipcMain.removeHandler('media:save');
+  ipcMain.handle('media:save', async (_event, data: Buffer | Uint8Array, filename: string) => {
+    try {
+      console.log('media:save called with:', {
+        dataType: data?.constructor?.name,
+        dataLength: data?.length,
+        filename,
+      });
+
+      if (!data || !filename) {
+        throw new Error('Invalid data or filename');
+      }
+
+      // Ensure media directory exists
+      await fs.mkdir(mediaDir, { recursive: true });
+
+      // Convert Uint8Array to Buffer if needed
+      const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
+      console.log('Buffer created, size:', buffer.length);
+
+      // Generate unique filename to avoid conflicts
+      const ext = path.extname(filename);
+      const name = path.basename(filename, ext);
+      const uniqueId = genId();
+      const uniqueFilename = `${name}_${uniqueId}${ext}`;
+      const filePath = path.join(mediaDir, uniqueFilename);
+
+      console.log('Writing file to:', filePath);
+      await fs.writeFile(filePath, buffer);
+      console.log('File written successfully');
+
+      // Return the relative path from media directory
+      return uniqueFilename;
+    } catch (err) {
+      console.error('media:save error', err);
+      throw err;
+    }
+  });
+
+  ipcMain.removeHandler('media:get');
+  ipcMain.handle('media:get', async (_event, filename: string) => {
+    try {
+      if (!filename) {
+        throw new Error('Invalid filename');
+      }
+
+      const filePath = path.join(mediaDir, filename);
+
+      // Check if file exists
+      try {
+        await fs.access(filePath);
+      } catch {
+        throw new Error('File not found');
+      }
+
+      const buffer = await fs.readFile(filePath);
+      return buffer;
+    } catch (err) {
+      console.error('media:get error', err);
+      throw err;
+    }
+  });
+
+  ipcMain.removeHandler('media:delete');
+  ipcMain.handle('media:delete', async (_event, filename: string) => {
+    try {
+      if (!filename) {
+        throw new Error('Invalid filename');
+      }
+
+      const filePath = path.join(mediaDir, filename);
+
+      try {
+        await fs.unlink(filePath);
+        return true;
+      } catch (err) {
+        console.error('Failed to delete media file', err);
+        return false;
+      }
+    } catch (err) {
+      console.error('media:delete error', err);
+      throw err;
+    }
+  });
+
+  ipcMain.removeHandler('media:get-url');
+  ipcMain.handle('media:get-url', async (_event, filename: string) => {
+    try {
+      console.log('media:get-url called with filename:', filename);
+
+      if (!filename) {
+        console.log('No filename provided');
+        return null;
+      }
+
+      const filePath = path.join(mediaDir, filename);
+      console.log('Full file path:', filePath);
+
+      // Check if file exists and read it
+      try {
+        await fs.access(filePath);
+        console.log('File exists, reading file');
+
+        // Read the file and convert to base64 data URL
+        const buffer = await fs.readFile(filePath);
+
+        // Determine MIME type from file extension
+        const ext = path.extname(filename).toLowerCase();
+        let mimeType = 'application/octet-stream';
+
+        switch (ext) {
+          case '.jpg':
+          case '.jpeg':
+            mimeType = 'image/jpeg';
+            break;
+          case '.png':
+            mimeType = 'image/png';
+            break;
+          case '.gif':
+            mimeType = 'image/gif';
+            break;
+          case '.webp':
+            mimeType = 'image/webp';
+            break;
+          case '.svg':
+            mimeType = 'image/svg+xml';
+            break;
+        }
+
+        const base64 = buffer.toString('base64');
+        const dataUrl = `data:${mimeType};base64,${base64}`;
+
+        console.log('Generated data URL, length:', dataUrl.length);
+        return dataUrl;
+      } catch (accessErr) {
+        console.log('File does not exist:', accessErr);
+        return null;
+      }
+    } catch (err) {
+      console.error('media:get-url error', err);
+      return null;
     }
   });
 };
