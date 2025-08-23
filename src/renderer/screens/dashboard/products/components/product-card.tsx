@@ -1,9 +1,9 @@
-import { Badge } from '@renderer/components/ui/badge';
-import { Button } from '@renderer/components/ui/button';
 import { Card, CardContent } from '@renderer/components/ui/card';
 import { Edit, Image as ImageIcon, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
+import { Badge } from '@renderer/components/ui/badge';
+import { Button } from '@renderer/components/ui/button';
 import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { Product } from 'src/types';
 
@@ -16,7 +16,6 @@ interface ProductCardProps {
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  // Load image URL for local files
   React.useEffect(() => {
     if (product.picture) {
       if (product.picture.startsWith('http') || product.picture.startsWith('file://')) {
