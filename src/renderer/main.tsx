@@ -4,6 +4,7 @@ import { RouterProvider, createHashRouter } from 'react-router';
 import { StrictMode, lazy } from 'react';
 
 import Login from './screens/page';
+import Products from './screens/dashboard/products/page';
 import { ThemeProvider } from '@/components/theme-provider';
 import { createRoot } from 'react-dom/client';
 
@@ -42,6 +43,10 @@ const router = createHashRouter([
       {
         path: 'customers',
         element: <Customers />,
+      },
+      {
+        path: 'products',
+        element: <Products />,
       },
       {
         path: 'analytics',
