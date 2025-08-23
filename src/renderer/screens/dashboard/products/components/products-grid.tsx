@@ -1,10 +1,10 @@
-import { Button } from '@renderer/components/ui/button';
 import { Card, CardContent } from '@renderer/components/ui/card';
 import { Package, Plus } from 'lucide-react';
-import React from 'react';
 
+import { Button } from '@renderer/components/ui/button';
 import { Product } from 'src/types';
 import { ProductCard } from './product-card';
+import React from 'react';
 
 interface ProductsGridProps {
   products: Product[] | undefined;
@@ -20,7 +20,6 @@ export function ProductsGrid({ products, filteredProducts, searchQuery, selected
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {!products ? (
-        // Loading state
         Array.from({ length: 8 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <div className="aspect-square bg-muted rounded-t-lg" />
