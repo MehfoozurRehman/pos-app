@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from './mode-toggle';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { toast } from 'sonner';
 import { useCallback } from 'react';
 import { useLocation } from 'react-router';
 
@@ -12,10 +13,10 @@ export function Header() {
     try {
       const changes = await window.api.db.changesSince(new Date(0).toISOString());
       console.log('db changes', changes);
-      alert(`Found ${Array.isArray(changes) ? changes.length : 0} change(s). See console for details.`);
+      toast.success(`Found ${Array.isArray(changes) ? changes.length : 0} change(s). See console for details.`);
     } catch (err) {
       console.error(err);
-      alert('Failed to fetch changes. See console for details.');
+      toast.error('Failed to fetch changes. See console for details.');
     }
   }, []);
 
