@@ -1,10 +1,50 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 import { Loader } from 'lucide-react';
+import { getMediaUrl } from '@/utils/media';
 
-export function ImageWithFallback({ fallback, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fallback: ReactNode }) {
+interface ImageWithFallbackProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+  src?: string;
+  fallback: ReactNode;
+  localPath?: string;
+  remoteUrl?: string;
+}
+
+export function ImageWithFallback({ fallback, src, localPath, remoteUrl, ...props }: ImageWithFallbackProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
+  console.log('ImageWithFallback props:', { src, localPath, remoteUrl });
+
+  useEffect(() => {
+    async function resolveSrc() {
+      // Priority: explicit src > remoteUrl > localPath
+      if (src) {
+        setResolvedSrc(src);
+        return;
+      }
+
+      if (remoteUrl) {
+        setResolvedSrc(remoteUrl);
+        return;
+      }
+
+      if (localPath) {
+        const url = await getMediaUrl(localPath);
+        console.log(url);
+        setResolvedSrc(url);
+        return;
+      }
+
+      setResolvedSrc(null);
+    }
+
+    resolveSrc();
+  }, [src, localPath, remoteUrl]);
+
+  if (!resolvedSrc) {
+    return <div className="relative w-full h-full flex justify-center items-center bg-background/20">{fallback}</div>;
+  }
 
   return (
     <div className={`relative w-full h-full flex justify-center items-center ${isError ? 'bg-background/20' : ''}`}>
@@ -18,6 +58,7 @@ export function ImageWithFallback({ fallback, ...props }: React.ImgHTMLAttribute
       <img
         loading="lazy"
         {...props}
+        src={resolvedSrc}
         onError={() => setIsError(true)}
         onLoad={() => setIsLoaded(true)}
         className={`absolute inset-0 w-full h-full object-cover ${isLoaded ? 'opacity-100' : 'opacity-0'} ${isError ? 'hidden' : ''}`}
