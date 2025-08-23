@@ -40,6 +40,19 @@ export type Order = {
   createdAt: string;
 };
 
+export type Customer = {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate?: string;
+  createdAt: string;
+};
+
 export type Shop = {
   id: string;
   shopId: string;
@@ -47,6 +60,11 @@ export type Shop = {
   name: string;
   logo: string;
   location: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  currency?: string;
+  taxRate?: number;
   createdAt?: string;
 };
 
@@ -55,6 +73,7 @@ export type DBSchema = {
   products: Product[];
   inventory: Inventory[];
   orders: Order[];
+  customers: Customer[];
   shop: Shop | null;
   changes: {
     id: string;
