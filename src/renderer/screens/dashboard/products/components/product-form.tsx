@@ -54,6 +54,7 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (isSubmitting) return;
 
     if (!formData.name.trim()) {
@@ -88,22 +89,17 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
         <DrawerHeader>
           <DrawerTitle>{editingProduct ? 'Edit Product' : 'Create Product'}</DrawerTitle>
         </DrawerHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-          <ScrollArea className="h-[calc(100vh-120px)] pr-4">
+        <form onSubmit={handleSubmit} className="flex p-4 w-full">
+          <ScrollArea className="h-full w-full">
             <div className="space-y-6">
-              {/* Product Image */}
               <div className="space-y-2">
                 <Label>Product Image</Label>
                 <ImageUpload value={formData.picture} onChange={(value) => setFormData((prev) => ({ ...prev, picture: value || '' }))} disabled={isSubmitting} placeholder="Upload product image" />
               </div>
-
-              {/* Product Name */}
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name *</Label>
                 <Input id="name" value={formData.name} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} placeholder="Enter product name" disabled={isSubmitting} required />
               </div>
-
-              {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -115,8 +111,6 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
                   rows={3}
                 />
               </div>
-
-              {/* Categories */}
               <div className="space-y-2">
                 <Label>Categories</Label>
                 <div className="flex gap-2">
@@ -136,9 +130,8 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
                     Add
                   </Button>
                 </div>
-
                 {formData.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     {formData.categories.map((category) => (
                       <Badge key={category} variant="secondary" className="cursor-pointer" onClick={() => handleRemoveCategory(category)}>
                         {category} ×
@@ -149,19 +142,17 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
               </div>
             </div>
           </ScrollArea>
-
-          {/* Form Actions */}
-          <DrawerFooter>
-            <div className="flex gap-2 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="flex-1">
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-1">
-                {isSubmitting ? 'Saving...' : editingProduct ? 'Update' : 'Create'}
-              </Button>
-            </div>
-          </DrawerFooter>
         </form>
+        <DrawerFooter>
+          <div className="flex gap-2 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1" onClick={handleSubmit}>
+              {isSubmitting ? 'Saving...' : editingProduct ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );
