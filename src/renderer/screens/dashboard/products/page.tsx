@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 import { Product } from 'src/types';
+import { toast } from 'sonner';
 
 interface ProductFormData {
   name: string;
@@ -20,14 +21,12 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get all unique categories
   const categories = useMemo(() => {
     if (!products) return [];
     const allCategories = products.flatMap((p: Product) => p.categories || []);
     return Array.from(new Set(allCategories));
   }, [products]);
 
-  // Filter products
   const filteredProducts = useMemo(() => {
     if (!products) return [];
 
@@ -54,7 +53,6 @@ export default function Products() {
     if (!confirm(`Are you sure you want to delete "${product.name}"?`)) return;
 
     try {
-      // Delete associated media file if it exists
       if (product.picture && !product.picture.startsWith('http')) {
         await window.api.media.delete(product.picture);
       }
@@ -63,7 +61,7 @@ export default function Products() {
       mutate('products');
     } catch (error) {
       console.error('Failed to delete product:', error);
-      alert('Failed to delete product. Please try again.');
+      toast.error('Failed to delete product. Please try again.');
     }
   };
 
@@ -90,7 +88,7 @@ export default function Products() {
       setIsCreateOpen(false);
     } catch (error) {
       console.error('Failed to save product:', error);
-      alert('Failed to save product. Please try again.');
+      toast.error('Failed to save product. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
