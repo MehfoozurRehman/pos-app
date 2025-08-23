@@ -9,6 +9,7 @@ import { Label } from '@renderer/components/ui/label';
 import { Product } from 'src/types';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Textarea } from '@renderer/components/ui/textarea';
+import { toast } from 'sonner';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
 
 interface ProductFormData {
@@ -38,7 +39,6 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
   const [categoryInput, setCategoryInput] = useState('');
   const isMobile = useIsMobile();
 
-  // Update form data when editing product changes
   React.useEffect(() => {
     if (editingProduct) {
       setFormData({
@@ -57,7 +57,7 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
     if (isSubmitting) return;
 
     if (!formData.name.trim()) {
-      alert('Product name is required');
+      toast.error('Product name is required');
       return;
     }
 
