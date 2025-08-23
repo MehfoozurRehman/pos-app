@@ -13,6 +13,7 @@ import { Input } from '@renderer/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ScrollContainer } from '@/components/scroll-container';
 import dayjs from 'dayjs';
+import { toast } from 'sonner';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
 import { useNavigate } from 'react-router';
@@ -114,16 +115,14 @@ function ProductCard({ product }: { product: any }) {
   };
 
   const handleAdd = async () => {
-    // For now, barcode entry only. We'll check inventory for this barcode
     const inv = await window.api.db.get('inventory');
     const found = (inv || []).find((i: any) => i.barcode === barcode || i.product === product.id);
 
     if (!found) {
-      alert('Item not found in inventory');
+      toast.error('Item not found in inventory');
       return;
     }
 
-    // create or update a draft order in cartAtom
     setCart((prev: any) => {
       const draft = prev || {
         id: undefined,
@@ -229,7 +228,6 @@ function OrderPanel() {
 
 function OrderQueue() {
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders')) as any;
-  // orders may be undefined initially
   const list = (orders || []).filter((o: any) => (o.status || 'draft') === 'draft' || (o.status || 'draft') === 'pending');
   if (!orders || list.length === 0) {
     return (
@@ -306,12 +304,8 @@ function OrderDetails() {
     discount: 10,
   };
 
-  const handleRemoveItem = (id: number) => {
-    alert('Remove item ' + id);
-  };
-
   const handleClearCart = () => {
-    alert('Cart cleared');
+    console.log('Cart cleared');
   };
 
   const subtotal = order.items.reduce((sum, item) => sum + (item.price - (item.discount || 0)), 0);
