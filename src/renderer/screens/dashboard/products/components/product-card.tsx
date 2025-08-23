@@ -38,8 +38,6 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
             <ImageIcon className="w-12 h-12 text-muted-foreground" />
           </div>
         )}
-
-        {/* Action buttons */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="flex gap-1">
             <Button size="sm" variant="secondary" className="h-8 w-8 p-0" onClick={() => onEdit(product)}>
@@ -51,11 +49,9 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           </div>
         </div>
       </div>
-
       <CardContent className="p-4">
         <h3 className="font-semibold text-sm mb-1 line-clamp-1">{product.name}</h3>
         {product.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{product.description}</p>}
-
         {product.categories && product.categories.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {product.categories.slice(0, 2).map((category) => (
