@@ -64,6 +64,12 @@ export interface PreloadAPI {
       }[]
     >;
   };
+  media: {
+    save: (data: Buffer | Uint8Array, filename: string) => Promise<string>;
+    get: (filename: string) => Promise<Buffer>;
+    delete: (filename: string) => Promise<boolean>;
+    getUrl: (filename: string) => Promise<string | null>;
+  };
 }
 
 declare global {
