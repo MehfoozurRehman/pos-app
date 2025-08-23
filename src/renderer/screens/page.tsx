@@ -9,7 +9,7 @@ export default function Login() {
       </div>
       <div className="w-full max-w-sm">
         <LoginForm />
-        <button
+        {/* <button
           onClick={async () => {
             const shop = await window.api.db.get('shop');
             console.log(shop);
@@ -48,7 +48,7 @@ export default function Login() {
           }}
         >
           delete note
-        </button>
+        </button> */}
       </div>
     </div>
   );
