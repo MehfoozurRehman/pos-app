@@ -16,6 +16,7 @@ import dayjs from 'dayjs';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
 import { useNavigate } from 'react-router';
+import useSWR from 'swr';
 
 export default function Dashboard() {
   const isMobile = useIsMobile();
@@ -41,6 +42,10 @@ export default function Dashboard() {
 
 function ProductsPanel() {
   const [parent] = useAutoAnimate();
+
+  const { data } = useSWR('products', () => window.api.db.get('products'));
+
+  console.log(data);
 
   const [selectedTag, setSelectedTag] = useState<string>('All');
 
