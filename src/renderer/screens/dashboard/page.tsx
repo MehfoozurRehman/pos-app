@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { BarChart3, BoxIcon, Clock, DollarSign, EyeIcon, Image, Mail, MapPin, Package, Phone, ShoppingCart, Store, TrendingUp, X } from 'lucide-react';
+import { BarChart3, BoxIcon, Clock, DollarSign, EyeIcon, ImageIcon, Mail, MapPin, Package, Phone, ShoppingCart, Store, TrendingUp, X } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Order, Product } from 'src/types';
 import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@/constants/state';
 import { useAtom, useAtomValue } from 'jotai/react';
 import { useEffect, useMemo, useState } from 'react';
@@ -11,7 +12,6 @@ import { Button } from '@renderer/components/ui/button';
 import { Card } from '@renderer/components/ui/card';
 import { ImageWithFallback } from '@/components/image-fallback';
 import { Input } from '@renderer/components/ui/input';
-import { Order } from 'src/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ScrollContainer } from '@/components/scroll-container';
 import dayjs from 'dayjs';
@@ -126,6 +126,7 @@ function ShopHeader() {
 
 function DashboardStats() {
   const navigate = useNavigate();
+
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
@@ -148,7 +149,7 @@ function DashboardStats() {
 
     const totalRevenue = completedOrders.reduce((sum: number, order: Order) => {
       const orderTotal = order.items.reduce((itemSum: number, item) => {
-        const inventoryItem = inventory.find((inv: any) => inv.barcode === item.barcode);
+        const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
         const price = inventoryItem?.sellingPrice || 0;
         const discount = item.discount || 0;
         return itemSum + (price - discount);
@@ -248,8 +249,10 @@ function ProductsPanel() {
   const [parent] = useAutoAnimate();
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
+
   const [selectedTag, setSelectedTag] = useState<string>('All');
   const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
+
   const [query, setQuery] = useState('');
 
   const tags = useMemo(() => Array.from(new Set((products || []).flatMap((p) => p.categories || []))), [products]);
@@ -257,9 +260,9 @@ function ProductsPanel() {
   const enrichedProducts = useMemo(() => {
     if (!products || !inventory) return [];
 
-    return products.map((product: any) => {
-      const productInventory = inventory.filter((inv: any) => inv.productId === product.id);
-      const averagePrice = productInventory.length > 0 ? productInventory.reduce((sum: number, inv: any) => sum + inv.sellingPrice, 0) / productInventory.length : 0;
+    return products.map((product) => {
+      const productInventory = inventory.filter((inv) => inv.productId === product.id);
+      const averagePrice = productInventory.length > 0 ? productInventory.reduce((sum: number, inv) => sum + inv.sellingPrice, 0) / productInventory.length : 0;
       const stockCount = productInventory.length;
 
       return {
@@ -311,7 +314,7 @@ function ProductsPanel() {
           </div>
         ) : (
           <div ref={parent} className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-            {filteredProducts.map((product: any) => (
+            {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -321,8 +324,15 @@ function ProductsPanel() {
   );
 }
 
-function ProductCard({ product }: { product: any }) {
+interface EnrichedProduct extends Product {
+  averagePrice: number;
+  stockCount: number;
+  inStock: boolean;
+}
+
+function ProductCard({ product }: { product: EnrichedProduct }) {
   const [, setCart] = useAtom(cartAtom);
+
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [barcode, setBarcode] = useState('');
 
@@ -350,7 +360,9 @@ function ProductCard({ product }: { product: any }) {
       found = availableItems[0];
     }
 
-    setCart((prev: any) => {
+    setCart((prev) => {
+      if (prev === null) return null;
+
       const draft = prev || {
         id: undefined,
         orderId: `#draft-${Date.now()}`,
@@ -362,7 +374,7 @@ function ProductCard({ product }: { product: any }) {
         createdAt: new Date().toISOString(),
       };
 
-      const existingItem = draft.items.find((item: any) => item.barcode === found.barcode);
+      const existingItem = draft.items.find((item) => item.barcode === found.barcode);
       if (existingItem) {
         toast.error('This item is already in the cart');
         return prev;
@@ -384,6 +396,20 @@ function ProductCard({ product }: { product: any }) {
     setShowAddDrawer(false);
   };
 
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (product.picture) {
+      if (product.picture.startsWith('http') || product.picture.startsWith('file://')) {
+        setImageUrl(product.picture);
+      } else {
+        window.api.media.getUrl(product.picture).then((url) => {
+          setImageUrl(url);
+        });
+      }
+    }
+  }, [product.picture]);
+
   return (
     <>
       <Card className="p-0 w-full pb-4 cursor-pointer bg-background/40 hover:bg-background/30 rounded-lg shadow-sm transform hover:scale-[1.01] transition gap-2 relative">
@@ -395,7 +421,13 @@ function ProductCard({ product }: { product: any }) {
           </div>
         )}
         <div className="flex items-center justify-center h-[140px] bg-gradient-to-br from-muted/20 to-muted/5 rounded-t-lg relative overflow-hidden">
-          <ImageWithFallback src={product.picture} alt={product.name} className="w-full h-full object-cover" fallback={<Image className="text-foreground opacity-80" size={48} />} />
+          {imageUrl ? (
+            <ImageWithFallback src={imageUrl} alt={product.name} className="w-full h-full object-cover" fallback={<ImageIcon className="w-12 h-12 text-muted-foreground" />} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon className="w-12 h-12 text-muted-foreground" />
+            </div>
+          )}
           {!product.inStock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <span className="text-white font-medium">Out of Stock</span>
@@ -431,7 +463,7 @@ function ProductCard({ product }: { product: any }) {
           <div className="p-4 space-y-4">
             <div>
               <label className="text-sm font-medium">Barcode (optional)</label>
-              <Input value={barcode} onChange={(e: any) => setBarcode(e.target.value)} placeholder="Scan or enter specific barcode" />
+              <Input value={barcode} onChange={(e) => setBarcode(e.target.value)} placeholder="Scan or enter specific barcode" />
               <p className="text-xs text-muted-foreground mt-1">Leave empty to automatically select an available item from stock</p>
             </div>
 
@@ -494,8 +526,10 @@ function OrderPanel() {
 }
 
 function OrderQueue() {
-  const { data: orders } = useSWR('orders', () => window.api.db.get('orders')) as any;
-  const list = (orders || []).filter((o: any) => (o.status || 'draft') === 'draft' || (o.status || 'draft') === 'pending');
+  const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
+
+  const list = (orders || []).filter((o) => (o.status || 'draft') === 'draft' || (o.status || 'draft') === 'pending');
+
   if (!orders || list.length === 0) {
     return (
       <div className="w-full p-4">
@@ -509,15 +543,15 @@ function OrderQueue() {
 
   return (
     <>
-      {list.map((order: any) => (
+      {list.map((order) => (
         <OrderCard key={order.id} order={order} />
       ))}
     </>
   );
 }
 
-function OrderCard({ order }: { order: any }) {
-  const [selectedOrder, setSelectedOrder] = useAtom(cartAtom);
+function OrderCard({ order }: { order: Order }) {
+  const [, setSelectedOrder] = useAtom(cartAtom);
 
   return (
     <Card onClick={() => setSelectedOrder(order)} className={`p-0 min-w-[250px] gap-4 pb-4 cursor-pointer bg-background/30 hover:bg-background`}>
@@ -553,8 +587,8 @@ function OrderDetails() {
     if (!cart?.items || !products || !inventory) return [];
 
     return cart.items.map((item, index) => {
-      const product = products.find((p: any) => p.id === item.productId);
-      const inventoryItem = inventory.find((inv: any) => inv.barcode === item.barcode);
+      const product = products.find((p) => p.id === item.productId);
+      const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
 
       return {
         id: `${item.productId}-${item.barcode}-${index}`,
