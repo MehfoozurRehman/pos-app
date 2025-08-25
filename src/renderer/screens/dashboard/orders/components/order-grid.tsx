@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { ShoppingBag } from 'lucide-react';
 
 import { OrderCard } from './order-card';
+import { ShoppingBag } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 interface EnrichedOrder {
