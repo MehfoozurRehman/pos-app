@@ -1,19 +1,7 @@
 import { AlertCircle, CheckCircle, Clock, DollarSign, Package, ShoppingBag } from 'lucide-react';
 import { Card, CardContent } from '@renderer/components/ui/card';
 
-interface EnrichedOrder {
-  id: string;
-  orderId: string;
-  status: string;
-  customerName: string;
-  customerPhone: string;
-  items: any[];
-  discount?: number;
-  createdAt: string;
-  total: number;
-  itemsCount: number;
-  productDetails: any[];
-}
+import { EnrichedOrder } from 'src/types';
 
 interface OrderStatsProps {
   orders: EnrichedOrder[];
