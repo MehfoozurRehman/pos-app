@@ -1,5 +1,5 @@
 import { Image as ImageIcon, Loader2, Upload, X } from 'lucide-react';
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from './button';
 import { Card } from './card';
@@ -22,7 +22,7 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function loadPreview() {
       console.log('Loading preview for value:', value);
 
