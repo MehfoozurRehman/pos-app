@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
+import { EnrichedOrder } from 'src/types';
 import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Separator } from '@renderer/components/ui/separator';
@@ -11,28 +12,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
-
-interface EnrichedOrder {
-  id: string;
-  orderId: string;
-  status: string;
-  customerName: string;
-  customerPhone: string;
-  items: any[];
-  discount?: number;
-  createdAt: string;
-  total: number;
-  itemsCount: number;
-  productDetails: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    barcode: string;
-    price: number;
-    discount: number;
-    finalPrice: number;
-  }>;
-}
 
 interface OrderDetailsProps {
   order: EnrichedOrder | null;
