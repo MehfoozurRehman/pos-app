@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
 import { Edit, Image as ImageIcon, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
@@ -16,7 +16,7 @@ interface ProductCardProps {
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (product.picture) {
       if (product.picture.startsWith('http') || product.picture.startsWith('file://')) {
         setImageUrl(product.picture);
