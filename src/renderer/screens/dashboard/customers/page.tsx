@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { CustomerFilters, CustomerGrid, CustomerHeader, CustomerDetails, CustomerStats } from './components';
+import { CustomerDetails, CustomerFilters, CustomerGrid, CustomerHeader, CustomerStats } from './components';
+import { Inventory, Order, Product } from 'src/types';
 import { useMemo, useState } from 'react';
-import useSWR from 'swr';
 
-import { Order, Product, Inventory } from 'src/types';
+import useSWR from 'swr';
 
 interface CustomerData {
   name: string;
@@ -33,7 +33,6 @@ export default function CustomersPage() {
   const customersData = useMemo(() => {
     if (!orders || !products || !inventory) return [];
 
-    // Group orders by customer
     const customerMap = new Map<string, CustomerData>();
 
     orders.forEach((order) => {
@@ -55,12 +54,10 @@ export default function CustomersPage() {
       customer.totalOrders += 1;
       customer.orders.push(order);
 
-      // Update last order date
       if (new Date(order.createdAt) > new Date(customer.lastOrderDate)) {
         customer.lastOrderDate = order.createdAt;
       }
 
-      // Calculate order total and track products
       const productMap = new Map<string, { quantity: number; totalSpent: number }>();
 
       order.items.forEach((item) => {
@@ -84,7 +81,6 @@ export default function CustomersPage() {
         }
       });
 
-      // Update favorite products
       productMap.forEach((data, productId) => {
         const product = products.find((p) => p.id === productId);
         if (product) {
@@ -105,7 +101,6 @@ export default function CustomersPage() {
       });
     });
 
-    // Sort favorite products by quantity
     customerMap.forEach((customer) => {
       customer.favoriteProducts.sort((a, b) => b.quantity - a.quantity);
     });
@@ -121,7 +116,6 @@ export default function CustomersPage() {
       return matchesSearch;
     });
 
-    // Sort customers
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'name':
