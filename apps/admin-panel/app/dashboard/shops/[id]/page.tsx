@@ -1,6 +1,7 @@
 import { Id } from '@/convex/_generated/dataModel';
 import { api } from '@/convex/_generated/api';
 import { fetchQuery } from 'convex/nextjs';
+import Image from 'next/image';
 
 export default async function ShopShow({ params }: { params: Promise<{ id: Id<'shops'> }> }) {
   const { id } = await params;
@@ -16,7 +17,7 @@ export default async function ShopShow({ params }: { params: Promise<{ id: Id<'s
   return (
     <div className="p-6">
       <div className="flex items-center gap-4">
-        <img src={shop.logo || '/file.svg'} alt={shop.name} className="w-16 h-16 rounded object-cover" />
+        <Image src={shop.logo || '/file.svg'} alt={shop.name} width={64} height={64} className="rounded object-cover" />
         <div>
           <h2 className="text-2xl font-semibold">{shop.name}</h2>
           <div className="text-sm text-muted-foreground">Owner: {shop.owner}</div>
