@@ -5,6 +5,7 @@ import { Button } from './button';
 import { Card } from './card';
 import { cn } from '@/utils';
 import { toast } from 'sonner';
+import { logger } from '@renderer/utils/logger';
 
 type ImageUploadProps = {
   value?: string;
@@ -24,26 +25,26 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
 
   useEffect(() => {
     async function loadPreview() {
-      console.log('Loading preview for value:', value);
+      logger.debug('Loading preview for image', 'image-preview', { value });
 
       if (!value || value.trim() === '') {
-        console.log('No value, setting preview to null');
+        logger.debug('No image value provided, clearing preview', 'image-preview');
         setPreview(null);
         return;
       }
 
       try {
         if (!value.startsWith('http') && !value.startsWith('file://')) {
-          console.log('Getting URL for local file:', value);
+          logger.debug('Getting URL for local media file', 'image-preview', { filename: value });
           const url = await window.api.media.getUrl(value);
-          console.log('Got URL:', url);
+          logger.debug('Retrieved media URL successfully', 'image-preview', { filename: value, url });
           setPreview(url);
         } else {
-          console.log('Using direct URL:', value);
+          logger.debug('Using direct URL for image preview', 'image-preview', { url: value });
           setPreview(value);
         }
       } catch (error) {
-        console.error('Failed to load preview:', error);
+        logger.error('Failed to load image preview', 'image-preview', { value, error });
         setPreview(null);
       }
     }
@@ -68,26 +69,26 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
       setIsUploading(true);
 
       try {
-        console.log('Starting file upload:', file.name, file.size, file.type);
+        logger.debug('Starting media file save', 'image-upload', { fileName: file.name, fileSize: file.size });
 
         const arrayBuffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
-        console.log('File converted to Uint8Array, size:', uint8Array.length);
+        logger.debug('File converted to binary data', 'image-upload', { fileName: file.name, dataSize: uint8Array.length });
 
         if (!window.api?.media?.save) {
           throw new Error('Media API not available');
         }
 
-        console.log('Calling media.save...');
+        logger.debug('Initiating media save operation', 'image-upload', { fileName: file.name });
 
         const filename = await window.api.media.save(uint8Array, file.name);
 
-        console.log('File saved successfully:', filename);
+        logger.info('Media file saved successfully', 'image-upload', { originalName: file.name, savedFilename: filename });
 
         onChange(filename);
       } catch (error) {
-        console.error('Failed to upload image:', error);
+        logger.error('Failed to upload image', 'image-upload', { fileName: file?.name, error });
         toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         setIsUploading(false);
@@ -151,9 +152,10 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
 
       if (value && !value.startsWith('http') && !value.startsWith('file://')) {
         try {
+          logger.debug('Starting media file deletion', 'image-upload', { filename: value });
           await window.api.media.delete(value);
         } catch (error) {
-          console.error('Failed to delete media file:', error);
+          logger.error('Failed to delete image', 'image-upload', { filename: value, error });
         }
       }
 

@@ -9,6 +9,7 @@ import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Separator } from '@renderer/components/ui/separator';
 import dayjs from 'dayjs';
+import { logger } from '@renderer/utils/logger';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
@@ -165,7 +166,7 @@ function ProductItem({ item }: { item: EnrichedOrder['productDetails'][0] }) {
           setImageUrl(item.productImage);
         }
       } catch (error) {
-        console.error('Failed to load image:', error);
+        logger.error('Failed to load product image in order details', 'order-product-image-load', { orderId: order.id, productId: item.productId, imagePath: item.productImage, error });
         setImageUrl(null);
       }
     }

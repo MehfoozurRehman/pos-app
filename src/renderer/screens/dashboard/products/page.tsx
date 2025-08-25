@@ -5,6 +5,7 @@ import useSWR, { mutate } from 'swr';
 
 import { Product } from 'src/types';
 import { toast } from 'sonner';
+import { logger } from '@renderer/utils/logger';
 
 type ProductFormData = {
   name: string;
@@ -65,7 +66,7 @@ export default function Products() {
 
       toast.success('Product deleted successfully');
     } catch (error) {
-      console.error('Failed to delete product:', error);
+      logger.error('Failed to delete product', 'product-delete', { productId: product.id, error });
       toast.error('Failed to delete product. Please try again.');
     }
   };
@@ -95,7 +96,7 @@ export default function Products() {
 
       setIsPopupOpen(false);
     } catch (error) {
-      console.error('Failed to save product:', error);
+      logger.error('Failed to save product', 'product-save', { productId: editingProduct?.id, error });
       toast.error('Failed to save product. Please try again.');
     } finally {
       setIsSubmitting(false);

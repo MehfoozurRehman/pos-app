@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import type { IpcRenderer } from 'electron';
-import type { DBSchema } from 'src/types';
+import type { DBSchema, Log } from 'src/types';
 
 type TableItem<K extends keyof DBSchema> = DBSchema[K] extends Array<infer U> ? U : DBSchema[K];
 
@@ -69,6 +69,11 @@ export interface PreloadAPI {
     get: (filename: string) => Promise<Buffer>;
     delete: (filename: string) => Promise<boolean>;
     getUrl: (filename: string) => Promise<string | null>;
+  };
+  log: {
+    create: (logData: Omit<Log, 'id'>) => Promise<Log>;
+    get: (options?: { level?: string; limit?: number; since?: string }) => Promise<Log[]>;
+    cleanup: (daysToKeep?: number) => Promise<boolean>;
   };
 }
 

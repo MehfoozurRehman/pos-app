@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@rend
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/components/ui/select';
 import { useEffect, useState } from 'react';
 import useSWR, { mutate } from 'swr';
+import { logger } from '@renderer/utils/logger';
 
 import { Button } from '@renderer/components/ui/button';
 import { ImageUpload } from '@renderer/components/ui/image-upload';
@@ -98,7 +99,7 @@ export default function Settings() {
       await mutate('shop');
       toast.success('Settings saved successfully');
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      logger.error('Failed to save shop settings', 'settings-save', error);
       toast.error('Failed to save settings. Please try again.');
     } finally {
       setIsSubmitting(false);

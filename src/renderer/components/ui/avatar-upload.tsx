@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from './button';
 import { cn } from '@/utils';
 import { toast } from 'sonner';
+import { logger } from '@renderer/utils/logger';
 
 type AvatarUploadProps = {
   value?: string;
@@ -66,7 +67,7 @@ export function AvatarUpload({ value, onChange, className, disabled = false, siz
 
         onChange(filename);
       } catch (error) {
-        console.error('Failed to upload avatar:', error);
+        logger.error('Failed to upload avatar', 'avatar-upload', error);
         toast.error('Failed to upload avatar. Please try again.');
       } finally {
         setIsUploading(false);
@@ -102,7 +103,7 @@ export function AvatarUpload({ value, onChange, className, disabled = false, siz
         try {
           await window.api.media.delete(value);
         } catch (error) {
-          console.error('Failed to delete media file:', error);
+          logger.error('Failed to delete media file', 'avatar-upload', error);
         }
       }
 

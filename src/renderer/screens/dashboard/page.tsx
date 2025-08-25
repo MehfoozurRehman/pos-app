@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { BarChart3, BoxIcon, Clock, DollarSign, EyeIcon, ImageIcon, Mail, MapPin, Package, Phone, ShoppingCart, Store, TrendingUp, X } from 'lucide-react';
+import { logger } from '@renderer/utils/logger';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Order, Product } from 'src/types';
 import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@/constants/state';
@@ -70,7 +71,7 @@ function GlobalBarcodeScanner() {
         try {
           await window.api.db.delete('orders', order.id);
         } catch (error) {
-          console.error('Error cleaning up old cart order:', error);
+          logger.error('Failed to cleanup old cart order', 'cart-cleanup', error);
         }
       }
       
@@ -196,13 +197,13 @@ function GlobalBarcodeScanner() {
         }
         mutate('orders');
       } catch (error) {
-        console.error('Error saving cart to database:', error);
+        logger.error('Failed to save cart to database', 'cart-save', error);
       }
     }
 
     toast.success(`✓ "${product.name}" added to cart via barcode scanner!`);
     } catch (error) {
-      console.error('Error adding to cart by barcode:', error);
+      logger.error('Failed to add item to cart by barcode', 'cart-add-barcode', { barcode, error });
       toast.error('Unable to add item to cart. Please try again or contact support if the issue persists.');
     }
   };
@@ -357,7 +358,7 @@ function DashboardStats() {
         const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
         
         if (!inventoryItem) {
-          console.warn(`Inventory item not found for barcode: ${item.barcode}`);
+          logger.warn('Inventory item not found for barcode', 'revenue-calculation', { barcode: item.barcode });
           return itemSum;
         }
 
@@ -670,7 +671,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
           }
           mutate('orders');
         } catch (error) {
-          console.error('Error saving cart to database:', error);
+          logger.error('Failed to save cart to database', 'cart-save', error);
         }
         
         toast.success(`✓ "${product.name}" added to cart successfully!`);
@@ -678,7 +679,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         setBarcode('');
       }
     } catch (error) {
-      console.error('Error adding item to cart:', error);
+      logger.error('Failed to add item to cart', 'cart-add-item', { productId: product.id, error });
       toast.error('Failed to add item to cart. Please try again.');
     } finally {
       setIsAddingToCart(false);
@@ -867,7 +868,7 @@ function OrderCard({ order }: { order: Order }) {
       mutate('orders');
       toast.success('Order deleted successfully');
     } catch (error) {
-      console.error('Error deleting order:', error);
+      logger.error('Failed to delete order', 'order-delete', { orderId: order.id, error });
       toast.error('Failed to delete order');
     }
   };
@@ -931,7 +932,7 @@ function OrderDetails() {
       const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
 
       if (!inventoryItem) {
-        console.warn(`Inventory item not found for barcode: ${item.barcode}`);
+        logger.warn('Inventory item not found for barcode in cart total calculation', 'cart-total', { barcode: item.barcode });
       }
 
       const unitPrice = inventoryItem?.sellingPrice || 0;
@@ -967,7 +968,7 @@ function OrderDetails() {
       setCart(null);
       toast.success('✓ Cart cleared successfully! All items have been removed.');
     } catch (error) {
-      console.error('Error clearing cart:', error);
+      logger.error('Failed to clear cart', 'cart-clear', error);
       setCart(null);
       toast.success('✓ Cart cleared successfully! All items have been removed.');
     } finally {
@@ -1047,7 +1048,7 @@ function OrderDetails() {
       mutate('orders');
       toast.success('✓ Order saved as draft! You can find it in the Orders section.');
     } catch (error) {
-      console.error('Error saving draft:', error);
+      logger.error('Failed to save draft order', 'draft-save', error);
       toast.error('Unable to save draft order. Please check your connection and try again.');
     } finally {
       setIsSavingDraft(false);
@@ -1093,7 +1094,7 @@ function OrderDetails() {
       mutate('orders');
       toast.success(`✓ Order completed successfully! Order #${orderData.orderId} is now pending.`);
     } catch (error) {
-      console.error('Error during checkout:', error);
+      logger.error('Checkout process failed', 'checkout', error);
       toast.error('Unable to complete checkout. Please verify all details and try again.');
     } finally {
       setIsCheckingOut(false);

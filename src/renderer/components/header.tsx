@@ -4,6 +4,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { toast } from 'sonner';
 import { useCallback } from 'react';
 import { useLocation } from 'react-router';
+import { logger } from '@renderer/utils/logger';
 
 export function Header() {
   const { pathname } = useLocation();
@@ -12,10 +13,10 @@ export function Header() {
   const handleGetChanges = useCallback(async () => {
     try {
       const changes = await window.api.db.changesSince(new Date(0).toISOString());
-      console.log('Changes since epoch:', changes);
+      logger.debug('Retrieved changes since epoch', 'sync-check', { changesCount: changes?.length || 0 });
       toast.success(`Found ${Array.isArray(changes) ? changes.length : 0} change(s). See console for details.`);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to check for changes since epoch', 'sync-check', err);
       toast.error('Failed to fetch changes. See console for details.');
     }
   }, []);

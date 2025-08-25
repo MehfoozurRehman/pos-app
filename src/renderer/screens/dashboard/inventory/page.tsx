@@ -5,6 +5,7 @@ import useSWR, { mutate } from 'swr';
 
 import { Inventory } from 'src/types';
 import { toast } from 'sonner';
+import { logger } from '@renderer/utils/logger';
 
 type InventoryFormData = {
   productId: string;
@@ -73,7 +74,7 @@ export default function InventoryPage() {
       await mutate('inventory');
       toast.success('Inventory item deleted successfully');
     } catch (error) {
-      console.error('Failed to delete inventory item:', error);
+      logger.error('Failed to delete inventory item', 'inventory-delete', { inventoryId: item.id, error });
       toast.error('Failed to delete inventory item. Please try again.');
     }
   };
@@ -106,7 +107,7 @@ export default function InventoryPage() {
       await mutate('inventory');
       setIsPopupOpen(false);
     } catch (error) {
-      console.error('Failed to save inventory item:', error);
+      logger.error('Failed to save inventory item', 'inventory-save', error);
       toast.error('Failed to save inventory item. Please try again.');
     } finally {
       setIsSubmitting(false);

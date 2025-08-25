@@ -1,9 +1,11 @@
-import type { DBSchema } from 'src/types';
+import type { DBSchema, Log } from 'src/types';
+
 import { JSONFile } from 'lowdb/node';
 import { Low } from 'lowdb';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import { ipcMain } from 'electron';
+import { logger } from './logger';
 import os from 'os';
 import path from 'path';
 
@@ -23,6 +25,7 @@ const DEFAULT_DB: DBSchema = {
   inventory: [],
   orders: [],
   shop: null,
+  logs: [],
   changes: [],
 };
 
@@ -56,6 +59,8 @@ async function getDb(): Promise<Low<DBSchema>> {
 export const dbModule = async () => {
   const db = await getDb();
 
+  logger.setDbInstance(db);
+
   const genId = (prefix = '') => `${prefix}${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
   const safeWrite = async () => {
@@ -63,7 +68,7 @@ export const dbModule = async () => {
       try {
         await db.write();
       } catch (err) {
-        console.error('db.write() failed', err);
+        logger.error('Database write failed', 'db-write', err);
         throw err;
       }
     });
@@ -77,13 +82,70 @@ export const dbModule = async () => {
     return true;
   };
 
+  ipcMain.removeHandler('log:create');
+  
+  ipcMain.handle('log:create', async (_event, logData: Omit<Log, 'id'>) => {
+    try {
+      const log: Log = {
+        ...logData,
+        id: genId('log_')
+      };
+      
+      if (!db.data.logs) db.data.logs = [];
+      db.data.logs.push(log);
+      await safeWrite();
+      return log;
+    } catch (err) {
+      console.error('log:create error', err);
+      throw err;
+    }
+  });
+
+  ipcMain.removeHandler('log:get');
+  ipcMain.handle('log:get', async (_event, options?: { level?: string; limit?: number; since?: string }) => {
+    try {
+      let logs = db.data.logs || [];
+      
+      if (options?.level) {
+        logs = logs.filter(log => log.level === options.level);
+      }
+      
+      if (options?.since) {
+        const sinceDate = new Date(options.since);
+        logs = logs.filter(log => new Date(log.timestamp) > sinceDate);
+      }
+      
+      logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      
+      if (options?.limit) {
+        logs = logs.slice(0, options.limit);
+      }
+      
+      return JSON.parse(JSON.stringify(logs));
+    } catch (err) {
+      logger.error('Failed to get logs', 'log-get', err);
+      throw err;
+    }
+  });
+
+  ipcMain.removeHandler('log:cleanup');
+  ipcMain.handle('log:cleanup', async (_event, daysToKeep: number = 30) => {
+    try {
+      await logger.cleanup(daysToKeep);
+      return true;
+    } catch (err) {
+      logger.error('Failed to cleanup logs', 'log-cleanup', err);
+      throw err;
+    }
+  });
+
   ipcMain.removeHandler('db:get');
   ipcMain.handle('db:get', async (_event, key: keyof DBSchema) => {
     try {
       validateKey(key);
       return JSON.parse(JSON.stringify(db.data[key]));
     } catch (err) {
-      console.error('db:get error', err);
+      logger.error('Database get operation failed', 'db-get', { key, error: err });
       throw err;
     }
   });
@@ -121,7 +183,7 @@ export const dbModule = async () => {
       await safeWrite();
       return JSON.parse(JSON.stringify(data));
     } catch (err) {
-      console.error('db:create error', err);
+      logger.error('Database create operation failed', 'db-create', { key, data, error: err });
       throw err;
     }
   });
@@ -167,7 +229,7 @@ export const dbModule = async () => {
       await safeWrite();
       return JSON.parse(JSON.stringify(after));
     } catch (err) {
-      console.error('db:update error', err);
+      logger.error('Database update operation failed', 'db-update', { key, id, patch, error: err });
       throw err;
     }
   });
@@ -211,7 +273,7 @@ export const dbModule = async () => {
       }
       return changed;
     } catch (err) {
-      console.error('db:delete error', err);
+      logger.error('Database delete operation failed', 'db-delete', { key, id, error: err });
       throw err;
     }
   });
@@ -315,7 +377,7 @@ export const dbModule = async () => {
 
       return condensed;
     } catch (err) {
-      console.error('db:changes-since error', err);
+      logger.error('Database changes-since operation failed', 'db-changes-since', { sinceIso, table, error: err });
       throw err;
     }
   });
@@ -323,7 +385,7 @@ export const dbModule = async () => {
   ipcMain.removeHandler('media:save');
   ipcMain.handle('media:save', async (_event, data: Buffer | Uint8Array, filename: string) => {
     try {
-      console.log('media:save called with:', {
+      logger.info('Media save operation started', 'media-save', {
         dataType: data?.constructor?.name,
         dataLength: data?.length,
         filename,
@@ -336,7 +398,7 @@ export const dbModule = async () => {
       await fs.mkdir(mediaDir, { recursive: true });
 
       const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
-      console.log('Buffer created, size:', buffer.length);
+      logger.debug('Buffer created for media save', 'media-save', { bufferSize: buffer.length });
 
       const ext = path.extname(filename);
       const name = path.basename(filename, ext);
@@ -344,13 +406,13 @@ export const dbModule = async () => {
       const uniqueFilename = `${name}_${uniqueId}${ext}`;
       const filePath = path.join(mediaDir, uniqueFilename);
 
-      console.log('Writing file to:', filePath);
+      logger.debug('Writing media file', 'media-save', { filePath });
       await fs.writeFile(filePath, buffer);
-      console.log('File written successfully');
+      logger.info('Media file saved successfully', 'media-save', { filename: uniqueFilename });
 
       return uniqueFilename;
     } catch (err) {
-      console.error('media:save error', err);
+      logger.error('Media save operation failed', 'media-save', { filename, error: err });
       throw err;
     }
   });
@@ -373,7 +435,7 @@ export const dbModule = async () => {
       const buffer = await fs.readFile(filePath);
       return buffer;
     } catch (err) {
-      console.error('media:get error', err);
+      logger.error('Media get operation failed', 'media-get', { filename, error: err });
       throw err;
     }
   });
@@ -391,11 +453,11 @@ export const dbModule = async () => {
         await fs.unlink(filePath);
         return true;
       } catch (err) {
-        console.error('Failed to delete media file', err);
+        logger.error('Failed to delete media file', 'media-delete', { filename, error: err });
         return false;
       }
     } catch (err) {
-      console.error('media:delete error', err);
+      logger.error('Media delete operation failed', 'media-delete', { filename, error: err });
       throw err;
     }
   });
@@ -403,19 +465,19 @@ export const dbModule = async () => {
   ipcMain.removeHandler('media:get-url');
   ipcMain.handle('media:get-url', async (_event, filename: string) => {
     try {
-      console.log('media:get-url called with filename:', filename);
+      logger.debug('Media get-url operation started', 'media-get-url', { filename });
 
       if (!filename) {
-        console.log('No filename provided');
+        logger.warn('No filename provided for media get-url', 'media-get-url');
         return null;
       }
 
       const filePath = path.join(mediaDir, filename);
-      console.log('Full file path:', filePath);
+      logger.debug('Resolving media file path', 'media-get-url', { filePath });
 
       try {
         await fs.access(filePath);
-        console.log('File exists, reading file');
+        logger.debug('Media file exists, reading for URL generation', 'media-get-url', { filename });
 
         const buffer = await fs.readFile(filePath);
 
@@ -444,14 +506,14 @@ export const dbModule = async () => {
         const base64 = buffer.toString('base64');
         const dataUrl = `data:${mimeType};base64,${base64}`;
 
-        console.log('Generated data URL, length:', dataUrl.length);
+        logger.debug('Generated data URL for media file', 'media-get-url', { filename, dataUrlLength: dataUrl.length });
         return dataUrl;
       } catch (accessErr) {
-        console.log('File does not exist:', accessErr);
+        logger.warn('Media file does not exist', 'media-get-url', { filename, error: accessErr });
         return null;
       }
     } catch (err) {
-      console.error('media:get-url error', err);
+      logger.error('Media get-url operation failed', 'media-get-url', { filename, error: err });
       return null;
     }
   });

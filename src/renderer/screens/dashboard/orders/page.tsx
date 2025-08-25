@@ -5,6 +5,7 @@ import useSWR, { mutate } from 'swr';
 
 import { Order } from 'src/types';
 import { toast } from 'sonner';
+import { logger } from '@renderer/utils/logger';
 
 type EnrichedOrder = Order & {
   total: number;
@@ -122,7 +123,7 @@ export default function OrdersPage() {
       await mutate('inventory');
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
-      console.error('Failed to update order status:', error);
+      logger.error('Failed to update order status', 'order-status-update', { orderId, newStatus, error });
       toast.error('Failed to update order status');
     }
   };
@@ -160,7 +161,7 @@ export default function OrdersPage() {
         }
       }
     } catch (error) {
-      console.error('Error managing inventory during status change:', error);
+      logger.error('Error managing inventory during status change', 'inventory-status-change', { orderId: order.id, oldStatus, newStatus, error });
       
     }
   };
@@ -183,7 +184,7 @@ export default function OrdersPage() {
         setSelectedOrder(null);
       }
     } catch (error) {
-      console.error('Failed to delete order:', error);
+      logger.error('Failed to delete order', 'order-delete', { orderId, error });
       toast.error('Failed to delete order');
     }
   };

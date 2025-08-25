@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { Order } from 'src/types';
 import useSWR from 'swr';
+import { logger } from '@renderer/utils/logger';
 
 type CustomerData = {
   name: string;

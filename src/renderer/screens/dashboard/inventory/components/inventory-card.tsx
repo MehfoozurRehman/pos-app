@@ -7,6 +7,7 @@ import { Button } from '@renderer/components/ui/button';
 import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { Inventory } from 'src/types';
 import dayjs from 'dayjs';
+import { logger } from '@renderer/utils/logger';
 
 type EnrichedInventory = Inventory & {
   productName: string;
@@ -38,7 +39,7 @@ export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
           setImageUrl(item.productImage);
         }
       } catch (error) {
-        console.error('Failed to load image:', error);
+        logger.error('Failed to load inventory item image', 'inventory-image-load', { inventoryId: item.id, imagePath: item.productImage, error });
         setImageUrl(null);
       }
     }

@@ -88,12 +88,23 @@ export type Shop = {
   createdAt?: string;
 };
 
+export type Log = {
+  id: string;
+  level: 'info' | 'warn' | 'error' | 'debug';
+  message: string;
+  context?: string;
+  data?: any;
+  timestamp: string;
+  source: 'main' | 'renderer';
+};
+
 export type DBSchema = {
   notes: Notes[];
   products: Product[];
   inventory: Inventory[];
   orders: Order[];
   shop: Shop | null;
+  logs: Log[];
   changes: {
     id: string;
     table: keyof DBSchema | string;

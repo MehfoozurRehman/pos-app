@@ -1,6 +1,7 @@
 import { Calendar, DollarSign, Image as ImageIcon, Package, Phone, ShoppingBag, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card';
 import { useEffect, useState } from 'react';
+import { logger } from '@renderer/utils/logger';
 
 import { Badge } from '@renderer/components/ui/badge';
 import { CustomerData } from 'src/types';
@@ -138,7 +139,7 @@ function ProductItem({ product }: { product: CustomerData['favoriteProducts'][0]
           setImageUrl(product.productImage);
         }
       } catch (error) {
-        console.error('Failed to load image:', error);
+        logger.error('Failed to load customer image', 'customer-image-load', { productId: product.productId, imagePath: product.productImage, error });
         setImageUrl(null);
       }
     }

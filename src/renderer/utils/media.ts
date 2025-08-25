@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 export function isLocalMedia(path: string): boolean {
   if (!path) return false;
   return !path.startsWith('http') && !path.startsWith('file://') && !path.startsWith('data:');
@@ -19,7 +21,7 @@ export async function getMediaUrl(path: string): Promise<string | null> {
     try {
       return await window.api.media.getUrl(path);
     } catch (error) {
-      console.error('Failed to get media URL:', error);
+      logger.error('Failed to get media URL', 'media-get-url', { path, error });
       return null;
     }
   }
@@ -68,7 +70,7 @@ export async function prepareMediaForSync(localPath: string): Promise<{
       mimeType,
     };
   } catch (error) {
-    console.error('Failed to prepare media for sync:', error);
+    logger.error('Failed to prepare media for sync', 'media-prepare-sync', { localPath, error });
     return null;
   }
 }

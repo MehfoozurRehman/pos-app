@@ -2,6 +2,7 @@ import { BrowserWindow, Menu, Tray, app, ipcMain, nativeImage, screen, shell } f
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 
 import { dbModule } from './db.ts';
+import { logger } from './logger';
 import icon from '../../resources/icon.png?asset';
 import path from 'path';
 
@@ -88,8 +89,8 @@ function createTray() {
       }
     });
   } catch (err) {
-    console.error('Failed to create tray', err);
-  }
+      logger.error('Failed to create system tray', 'tray-creation', err);
+    }
 }
 
 app.whenReady().then(async () => {

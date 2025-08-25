@@ -42,6 +42,17 @@ const api = {
       return await ipcRenderer.invoke('media:get-url', filename);
     },
   },
+  log: {
+    create: async (logData: any) => {
+      return await ipcRenderer.invoke('log:create', logData);
+    },
+    get: async (options?: { level?: string; limit?: number; since?: string }) => {
+      return await ipcRenderer.invoke('log:get', options);
+    },
+    cleanup: async (daysToKeep?: number) => {
+      return await ipcRenderer.invoke('log:cleanup', daysToKeep);
+    },
+  },
 };
 
 if (process.contextIsolated) {
@@ -49,7 +60,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI);
     contextBridge.exposeInMainWorld('api', api);
   } catch (error) {
-    console.error(error);
+    console.error('Failed to expose APIs to renderer:', error);
   }
 } else {
   (window as any).electron = electronAPI;
