@@ -68,7 +68,7 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
   };
 
   const subtotal = order.productDetails.reduce((sum, item) => sum + item.finalPrice, 0);
-  const orderDiscount = order.discount ? (subtotal * order.discount) / 100 : 0;
+  const orderDiscount = order.discount || 0;
   const finalTotal = subtotal - orderDiscount;
 
   return (
