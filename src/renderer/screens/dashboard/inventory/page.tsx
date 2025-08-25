@@ -82,7 +82,6 @@ export default function InventoryPage() {
     try {
       setIsSubmitting(true);
 
-      // Check if barcode already exists (for new items or different items)
       if (inventory) {
         const existingItem = inventory.find((item) => item.barcode === data.barcode && item.id !== editingInventory?.id);
         if (existingItem) {
