@@ -50,9 +50,40 @@ function GlobalBarcodeScanner() {
   const [, setCart] = useAtom(cartAtom);
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
+  const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
   const barcodeInputRef = useRef<HTMLInputElement>(null);
   const [barcodeBuffer, setBarcodeBuffer] = useState('');
   const [lastInputTime, setLastInputTime] = useState(0);
+
+  // Cleanup old temporary cart orders (older than 1 hour)
+  useEffect(() => {
+    const cleanupOldCarts = async () => {
+      if (!orders) return;
+      
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const oldCartOrders = orders.filter((order: Order) => 
+        order.status === 'cart' && 
+        new Date(order.updatedAt || order.createdAt) < oneHourAgo
+      );
+      
+      for (const order of oldCartOrders) {
+        try {
+          await window.api.db.delete('orders', order.id);
+        } catch (error) {
+          console.error('Error cleaning up old cart order:', error);
+        }
+      }
+      
+      if (oldCartOrders.length > 0) {
+        mutate('orders');
+      }
+    };
+
+    const interval = setInterval(cleanupOldCarts, 5 * 60 * 1000); // Run every 5 minutes
+    cleanupOldCarts(); // Run immediately
+
+    return () => clearInterval(interval);
+  }, [orders]);
 
   useEffect(() => {
     const focusInput = () => {
@@ -86,73 +117,94 @@ function GlobalBarcodeScanner() {
   const addToCartByBarcode = async (barcode: string) => {
     try {
       if (!barcode || !barcode.trim()) {
-        toast.error('Invalid barcode');
+        toast.error('Please enter a valid barcode to continue.');
         return;
       }
 
       if (!inventory || !Array.isArray(inventory) || !products || !Array.isArray(products)) {
-        toast.error('Data not loaded yet');
+        toast.error('System is still loading data. Please wait a moment and try again.');
         return;
       }
 
       const inventoryItem = inventory.find((item) => item.barcode === barcode.trim());
       if (!inventoryItem) {
-        toast.error(`Product with barcode ${barcode} not found`);
-        return;
-      }
-
-      // Validate inventory item
-      if (!inventoryItem.productId || inventoryItem.sellingPrice < 0) {
-        toast.error('Invalid inventory item data');
+        toast.error(`No product found with barcode "${barcode}". Please verify the barcode is correct.`);
         return;
       }
 
       const product = products.find((p) => p.id === inventoryItem.productId);
       if (!product) {
-        toast.error('Product details not found');
+        toast.error(`Product details missing for barcode "${barcode}". Please contact support.`);
         return;
       }
 
+      // Validate inventory item
+      if (!inventoryItem.productId || inventoryItem.sellingPrice < 0) {
+        toast.error(`Invalid inventory data for "${product.name}". Please contact support.`);
+        return;
+      }
+    let updatedCart: Order | undefined;
     setCart((prev) => {
-      // Create a new draft cart if none exists
-      const draft = prev || {
-        id: `draft-${Date.now()}`,
-        orderId: `#draft-${Date.now()}`,
-        status: 'draft',
+      // Create a new cart session if none exists
+      const cart = prev || {
+        id: `cart-${Date.now()}`,
+        orderId: `#cart-${Date.now()}`,
+        status: 'cart',
         customerName: '',
         customerPhone: '',
         items: [],
         discount: 0,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       // Check if item already exists in cart
-      const existingItem = draft.items.find((item) => item.barcode === barcode);
+      const existingItem = cart.items.find((item) => item.barcode === barcode);
       if (existingItem) {
-        toast.error('This item is already in the cart');
+        toast.error(`This item is already in your cart. You can modify quantity from the cart panel.`);
         return prev;
       }
 
       // Add new item to cart
-      const updatedCart = {
-        ...draft,
+      updatedCart = {
+        ...cart,
         items: [
-          ...draft.items,
+          ...cart.items,
           {
             productId: inventoryItem.productId,
             barcode: barcode,
             discount: 0,
+            quantity: 1,
           },
         ],
+        updatedAt: new Date().toISOString(),
       };
 
       return updatedCart;
     });
 
-    toast.success(`Added ${product.name} to cart`);
+    // Save/update cart in database after state update
+    if (updatedCart) {
+      try {
+        const existingCart = await window.api.db.get('orders').then(orders => 
+          orders?.find((o: Order) => o.id === updatedCart!.id)
+        );
+        
+        if (existingCart) {
+          await window.api.db.update('orders', updatedCart.id, updatedCart);
+        } else {
+          await window.api.db.create('orders', updatedCart);
+        }
+        mutate('orders');
+      } catch (error) {
+        console.error('Error saving cart to database:', error);
+      }
+    }
+
+    toast.success(`✓ "${product.name}" added to cart via barcode scanner!`);
     } catch (error) {
       console.error('Error adding to cart by barcode:', error);
-      toast.error('Failed to add item to cart');
+      toast.error('Unable to add item to cart. Please try again or contact support if the issue persists.');
     }
   };
 
@@ -508,6 +560,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
 
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [barcode, setBarcode] = useState('');
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const openAdd = () => {
     setBarcode('');
@@ -516,9 +569,10 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
 
   const handleAdd = async () => {
     try {
+      setIsAddingToCart(true);
       const inv = await window.api.db.get('inventory');
       if (!inv || !Array.isArray(inv)) {
-        toast.error('Failed to load inventory data');
+        toast.error('Unable to load inventory data. Please refresh and try again.');
         return;
       }
 
@@ -528,7 +582,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         // Look for specific barcode for this product
         found = inv.find((i) => i.barcode === barcode.trim() && i.productId === product.id);
         if (!found) {
-          toast.error(`Barcode ${barcode.trim()} not found for this product`);
+          toast.error(`Barcode "${barcode.trim()}" not found for ${product.name}. Please verify the barcode.`);
           return;
         }
       } else {
@@ -549,7 +603,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         );
 
         if (availableItems.length === 0) {
-          toast.error('No available inventory items for this product');
+          toast.error(`No available inventory for "${product.name}". All items may already be in cart or out of stock.`);
           return;
         }
         found = availableItems[0];
@@ -562,52 +616,74 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
       }
 
       let additionSuccessful = false;
+      let updatedCart: Order | undefined;
 
       setCart((prev) => {
-        // Create a new draft cart if none exists
-        const draft = prev || {
-          id: `draft-${Date.now()}`,
-          orderId: `#draft-${Date.now()}`,
-          status: 'draft',
+        // Create a new cart session if none exists
+        const cart = prev || {
+          id: `cart-${Date.now()}`,
+          orderId: `#cart-${Date.now()}`,
+          status: 'cart',
           customerName: '',
           customerPhone: '',
           items: [],
           discount: 0,
           createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
         // Check if item already exists in cart
-        const existingItem = draft.items.find((item) => item.barcode === found.barcode);
+        const existingItem = cart.items.find((item) => item.barcode === found.barcode);
         if (existingItem) {
-          toast.error('This item is already in the cart');
+          toast.error(`"${product.name}" is already in your cart. You can modify quantity from the cart.`);
           return prev;
         }
 
         // Add new item to cart
-        const updatedCart = {
-          ...draft,
+        updatedCart = {
+          ...cart,
           items: [
-            ...draft.items,
+            ...cart.items,
             {
               productId: product.id,
               barcode: found.barcode,
               discount: 0,
+              quantity: 1,
             },
           ],
+          updatedAt: new Date().toISOString(),
         };
 
         additionSuccessful = true;
         return updatedCart;
       });
 
-      if (additionSuccessful) {
-        toast.success(`Added ${product.name} to cart`);
+      // Save/update cart in database after state update
+      if (additionSuccessful && updatedCart) {
+        try {
+          const existingCart = await window.api.db.get('orders').then(orders => 
+            orders?.find((o: Order) => o.id === updatedCart!.id)
+          );
+          
+          if (existingCart) {
+            await window.api.db.update('orders', updatedCart.id, updatedCart);
+          } else {
+            await window.api.db.create('orders', updatedCart);
+          }
+          mutate('orders');
+        } catch (error) {
+          console.error('Error saving cart to database:', error);
+        }
+        
+        toast.success(`✓ "${product.name}" added to cart successfully!`);
         setShowAddDrawer(false);
         setBarcode('');
       }
     } catch (error) {
       console.error('Error adding item to cart:', error);
       toast.error('Failed to add item to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -688,11 +764,11 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
             </div>
 
             <div className="flex gap-2 mt-6">
-              <Button onClick={() => setShowAddDrawer(false)} variant="outline" className="flex-1">
+              <Button onClick={() => setShowAddDrawer(false)} variant="outline" className="flex-1" disabled={isAddingToCart}>
                 Cancel
               </Button>
-              <Button onClick={handleAdd} className="flex-1">
-                Add Item to Cart
+              <Button onClick={handleAdd} className="flex-1" disabled={isAddingToCart}>
+                {isAddingToCart ? 'Adding...' : 'Add Item to Cart'}
               </Button>
             </div>
           </div>
@@ -743,7 +819,10 @@ function OrderPanel() {
 function OrderQueue() {
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
 
-  const list = (orders || []).filter((o) => (o.status || 'draft') === 'draft' || (o.status || 'draft') === 'pending');
+  const list = (orders || []).filter((o) => {
+    const status = o.status || 'draft';
+    return status === 'cart' || status === 'draft' || status === 'pending';
+  });
 
   if (!orders || list.length === 0) {
     return (
@@ -767,12 +846,57 @@ function OrderQueue() {
 
 function OrderCard({ order }: { order: Order }) {
   const [, setSelectedOrder] = useAtom(cartAtom);
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'cart':
+        return <Badge variant="secondary">In Cart</Badge>;
+      case 'draft':
+        return <Badge variant="outline">Draft</Badge>;
+      case 'pending':
+        return <Badge variant="default">Pending</Badge>;
+      case 'completed':
+        return <Badge variant="secondary">Completed</Badge>;
+      default:
+        return <Badge variant="outline">Draft</Badge>;
+    }
+  };
+
+  const handleDeleteOrder = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    try {
+      await window.api.db.delete('orders', order.id);
+      mutate('orders');
+      toast.success('Order deleted successfully');
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error('Failed to delete order');
+    }
+  };
+
+  const canDelete = order.status === 'cart' || order.status === 'draft';
 
   return (
     <Card onClick={() => setSelectedOrder(order)} className={`p-0 min-w-[250px] gap-4 pb-4 cursor-pointer bg-background/30 hover:bg-background`}>
-      <div className="font-bold border-b p-3">#{order.orderId}</div>
+      <div className="font-bold border-b p-3 flex items-center justify-between">
+        <span>#{order.orderId}</span>
+        <div className="flex items-center gap-2">
+          {getStatusBadge(order.status || 'draft')}
+          {canDelete && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleDeleteOrder}
+              className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+              title="Delete order"
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
+      </div>
       <div className="px-4 flex flex-col gap-4">
-        <div className="font-bold">{order.customerName}</div>
+        <div className="font-bold">{order.customerName || 'No Customer'}</div>
         <div className="text-foreground">{dayjs(order.createdAt).format('DD MM YYYY HH:mm A')}</div>
         <Button variant="outline" className="w-fit">
           <BoxIcon />
@@ -784,9 +908,12 @@ function OrderCard({ order }: { order: Order }) {
 }
 
 function OrderDetails() {
-  const isMobile = useIsMobile();
-  const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
   const [cart, setCart] = useAtom(cartAtom);
+  const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isClearingCart, setIsClearingCart] = useState(false);
+  const isMobile = useIsMobile();
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
 
@@ -829,9 +956,25 @@ function OrderDetails() {
   const subtotal = enrichedCartItems.reduce((sum, item) => sum + item.totalPrice, 0);
   const total = subtotal - (cart?.discount || 0);
 
-  const handleClearCart = () => {
-    setCart(null);
-    toast.success('Cart cleared');
+  const handleClearCart = async () => {
+    if (!confirm('Are you sure you want to clear the cart?')) return;
+    
+    try {
+      setIsClearingCart(true);
+      if (cart && cart.id && cart.status === 'cart') {
+        // Remove temporary cart order from database
+        await window.api.db.delete('orders', cart.id);
+        mutate('orders');
+      }
+      setCart(null);
+      toast.success('✓ Cart cleared successfully! All items have been removed.');
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      setCart(null); // Clear cart from state even if database operation fails
+      toast.success('✓ Cart cleared successfully! All items have been removed.');
+    } finally {
+      setIsClearingCart(false);
+    }
   };
 
   const handleRemoveItem = (productId: string, barcode: string) => {
@@ -843,7 +986,7 @@ function OrderDetails() {
       const newItems = [...cart.items];
       newItems.splice(itemIndex, 1);
       setCart({ ...cart, items: newItems });
-      toast.success('Item removed from cart');
+      toast.success('✓ Item removed from cart successfully!');
     }
   };
 
@@ -856,7 +999,7 @@ function OrderDetails() {
     if (field === 'customerPhone' && value) {
       const phoneRegex = /^[\d\s\-\+\(\)]+$/;
       if (!phoneRegex.test(value)) {
-        toast.error('Please enter a valid phone number');
+        toast.error('Please enter a valid phone number (numbers, spaces, dashes, and parentheses only).');
         return;
       }
     }
@@ -864,7 +1007,7 @@ function OrderDetails() {
     if (field === 'customerName') {
       validatedValue = value.trim();
       if (validatedValue.length > 100) {
-        toast.error('Name is too long (max 100 characters)');
+        toast.error('Customer name is too long. Please keep it under 100 characters.');
         return;
       }
     }
@@ -872,40 +1015,90 @@ function OrderDetails() {
     setCart({ ...cart, [field]: validatedValue });
   };
 
-  const handleCheckout = async () => {
+  const handleSaveDraft = async () => {
     try {
       if (!cart || !cart.items.length) {
-        toast.error('Cart is empty');
+        toast.error('Your cart is empty. Add some items before saving as draft.');
         return;
       }
 
       // Validate cart items
-      if (!cart.items.every(item => item.barcode && item.productId)) {
-        toast.error('Invalid items in cart');
+      if (!cart.items.every(item => item.barcode && item.quantity > 0)) {
+        toast.error('Some items in your cart are invalid. Please remove them and try again.');
         return;
       }
 
-      // Validate customer data
-      if (!cart.customerName?.trim()) {
-        toast.error('Customer name is required');
-        return;
-      }
-
+      setIsSavingDraft(true);
+      
       const orderData = {
         ...cart,
-        id: undefined,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
+        id: cart.id || `draft-${Date.now()}`,
+        status: 'draft' as const,
+        createdAt: cart.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      await window.api.db.create('orders', orderData);
+      // If updating existing cart order, use update instead of create
+      if (cart.id && cart.status === 'cart') {
+        await window.api.db.update('orders', cart.id, orderData);
+      } else {
+        await window.api.db.create('orders', orderData);
+      }
+      
       setCart(null);
       mutate('orders');
-      toast.success('Order created successfully!');
+      toast.success('✓ Order saved as draft! You can find it in the Orders section.');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast.error('Unable to save draft order. Please check your connection and try again.');
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      if (!cart || !cart.items.length) {
+        toast.error('Your cart is empty. Add some items before checkout.');
+        return;
+      }
+
+      // Validate cart items
+      if (!cart.items.every(item => item.barcode && item.quantity > 0)) {
+        toast.error('Some items in your cart are invalid. Please remove them and try again.');
+        return;
+      }
+
+      // Validate customer data for checkout
+      if (!cart.customerName?.trim()) {
+        toast.error('Please enter customer name before proceeding with checkout.');
+        return;
+      }
+
+      setIsCheckingOut(true);
+      
+      const orderData = {
+        ...cart,
+        id: cart.id || `order-${Date.now()}`,
+        status: 'pending' as const,
+        createdAt: cart.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // If updating existing cart order, use update instead of create
+      if (cart.id && cart.status === 'cart') {
+        await window.api.db.update('orders', cart.id, orderData);
+      } else {
+        await window.api.db.create('orders', orderData);
+      }
+      setCart(null);
+      mutate('orders');
+      toast.success(`✓ Order completed successfully! Order #${orderData.orderId} is now pending.`);
     } catch (error) {
       console.error('Error during checkout:', error);
-      toast.error('Failed to create order. Please try again.');
+      toast.error('Unable to complete checkout. Please verify all details and try again.');
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
@@ -927,7 +1120,15 @@ function OrderDetails() {
             className={`${isMobile ? 'absolute right-0 max-w-[70vw] bg-background' : 'max-w-[400px] bg-background/30'} flex flex-col w-full p-4 rounded-lg shadow-lg border h-full`}
           >
             <div className="flex items-center justify-between mb-4">
-              <span className="font-bold text-lg">{cart ? `Cart (${cart.items.length})` : 'Cart (0)'}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{cart ? `Cart (${cart.items.length})` : 'Cart (0)'}</span>
+                {(isCheckingOut || isSavingDraft || isClearingCart) && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span>Processing...</span>
+                  </div>
+                )}
+              </div>
               <Button variant="outline" onClick={() => setCartVisible(false)}>
                 <EyeIcon />
               </Button>
@@ -935,10 +1136,11 @@ function OrderDetails() {
 
             {!cart || !cart.items.length ? (
               <div className="flex-1 flex items-center justify-center">
-                <Card className="p-6 text-center bg-card/50">
-                  <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                  <div className="text-lg font-semibold mb-2">Cart is empty</div>
-                  <div className="text-sm text-muted-foreground">Add products to start creating an order</div>
+                <Card className="p-6 text-center bg-card/50 border-dashed border-2">
+                  <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-muted-foreground/60" />
+                  <div className="text-lg font-semibold mb-2 text-muted-foreground">Your cart is empty</div>
+                  <div className="text-sm text-muted-foreground/80 mb-3">Add products to start creating an order</div>
+                  <div className="text-xs text-muted-foreground/60">💡 Tip: Use the barcode scanner or click "Add to Order" on products</div>
                 </Card>
               </div>
             ) : (
@@ -1001,12 +1203,32 @@ function OrderDetails() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="destructive" onClick={handleClearCart} className="flex-1">
-                    Clear Cart
-                  </Button>
-                  <Button variant="default" onClick={handleCheckout} className="flex-1">
-                    Checkout
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={handleSaveDraft} 
+                      className="flex-1"
+                      disabled={isSavingDraft || isCheckingOut || isClearingCart}
+                    >
+                      {isSavingDraft ? 'Saving...' : 'Save Draft'}
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      onClick={handleCheckout} 
+                      className="flex-1"
+                      disabled={isCheckingOut || isSavingDraft || isClearingCart}
+                    >
+                      {isCheckingOut ? 'Processing...' : 'Checkout'}
+                    </Button>
+                  </div>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleClearCart} 
+                    className="w-full"
+                    disabled={isClearingCart || isCheckingOut || isSavingDraft}
+                  >
+                    {isClearingCart ? 'Clearing...' : 'Clear Cart'}
                   </Button>
                 </div>
               </>
