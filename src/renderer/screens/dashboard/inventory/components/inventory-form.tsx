@@ -1,16 +1,16 @@
+import { Barcode, Calculator, DollarSign, Package } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@renderer/components/ui/drawer';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/components/ui/select';
 import { useEffect, useState } from 'react';
 
 import { BarcodeInput } from '@renderer/components/ui/barcode-input';
 import { Button } from '@renderer/components/ui/button';
 import { Input } from '@renderer/components/ui/input';
-import { Label } from '@renderer/components/ui/label';
 import { Inventory } from 'src/types';
+import { Label } from '@renderer/components/ui/label';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/components/ui/select';
 import { toast } from 'sonner';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
-import { Barcode, Calculator, DollarSign, Package } from 'lucide-react';
 
 interface InventoryFormData {
   productId: string;
