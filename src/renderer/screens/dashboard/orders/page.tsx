@@ -41,7 +41,7 @@ export default function OrdersPage() {
 
         const basePrice = inventoryItem?.sellingPrice || 0;
         const discount = item.discount || 0;
-        const finalPrice = basePrice * (1 - discount / 100);
+        const finalPrice = basePrice - discount;
 
         total += finalPrice;
 
@@ -57,7 +57,7 @@ export default function OrdersPage() {
       });
 
       if (order.discount) {
-        total = total * (1 - order.discount / 100);
+        total = total - order.discount;
       }
 
       return {
