@@ -1,5 +1,5 @@
+import { AlertCircle, CheckCircle, Clock, DollarSign, Package, ShoppingBag } from 'lucide-react';
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { ShoppingBag, DollarSign, Clock, CheckCircle, AlertCircle, Package } from 'lucide-react';
 
 interface EnrichedOrder {
   id: string;
