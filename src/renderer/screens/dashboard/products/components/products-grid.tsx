@@ -4,10 +4,9 @@ import { Package, Plus } from 'lucide-react';
 import { Button } from '@renderer/components/ui/button';
 import { Product } from 'src/types';
 import { ProductCard } from './product-card';
-import React from 'react';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 interface ProductsGridProps {
-  products: Product[] | undefined;
   filteredProducts: Product[];
   searchQuery: string;
   selectedCategory: string;
@@ -16,20 +15,12 @@ interface ProductsGridProps {
   onCreateProduct: () => void;
 }
 
-export function ProductsGrid({ products, filteredProducts, searchQuery, selectedCategory, onEdit, onDelete, onCreateProduct }: ProductsGridProps) {
+export function ProductsGrid({ filteredProducts, searchQuery, selectedCategory, onEdit, onDelete, onCreateProduct }: ProductsGridProps) {
+  const [parent] = useAutoAnimate();
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {!products ? (
-        Array.from({ length: 8 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <div className="aspect-square bg-muted rounded-t-lg" />
-            <CardContent className="p-4">
-              <div className="h-4 bg-muted rounded mb-2" />
-              <div className="h-3 bg-muted rounded w-2/3" />
-            </CardContent>
-          </Card>
-        ))
-      ) : filteredProducts.length === 0 ? (
+    <div ref={parent} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      {filteredProducts.length === 0 ? (
         <div className="col-span-full">
           <Card>
             <CardContent className="p-12 text-center">
@@ -46,7 +37,7 @@ export function ProductsGrid({ products, filteredProducts, searchQuery, selected
           </Card>
         </div>
       ) : (
-        filteredProducts.map((product: Product) => <ProductCard key={product.id} product={product} onEdit={onEdit} onDelete={onDelete} />)
+        filteredProducts.map((product) => <ProductCard key={product.id} product={product} onEdit={onEdit} onDelete={onDelete} />)
       )}
     </div>
   );
