@@ -89,6 +89,9 @@ importers:
       lucide-react:
         specifier: ^0.540.0
         version: 0.540.0(react@19.1.1)
+      minimatch:
+        specifier: ^10.0.3
+        version: 10.0.3
       next:
         specifier: 15.5.0
         version: 15.5.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -6624,7 +6627,7 @@ snapshots:
 
   '@types/minimatch@6.0.0':
     dependencies:
-      minimatch: 9.0.5
+      minimatch: 10.0.3
 
   '@types/ms@2.1.0': {}
 
