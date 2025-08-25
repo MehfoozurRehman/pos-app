@@ -70,7 +70,6 @@
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 
-  /* Shadcnblocks.com */
   --muted-2: oklch(92.5%, 0%, 89.876%);
   --muted-2-foreground: oklch(55.2%, 3.5%, 285.938%);
 
@@ -78,7 +77,6 @@
   --gradient-2: oklch(72.7%, 46.75%, 144.688%);
   --gradient-3: oklch(70.1%, 37.75%, 339.956%);
 
-  /* Fonts */
   --font-sans: 'Inter', sans-serif;
   --font-serif: 'Roboto Serif', serif;
   --font-mono: 'Roboto Mono', monospace;
@@ -134,7 +132,6 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
 
-  /* Shadcnblocks.com */
   --muted-2: oklch(30.1%, 0%, 89.876%);
   --muted-2-foreground: oklch(80.2%, 1%, 286.305%);
 
@@ -170,7 +167,6 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* Shadcnblocks.com */
   --color-muted-2: var(--muted-2);
   --color-muted-2-foreground: var(--muted-2-foreground);
   --color-transparent: transparent;
@@ -185,7 +181,7 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
-  --breakpoint-2xl: 1400px; /* default is 1536px */
+  --breakpoint-2xl: 1400px;
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -759,12 +755,12 @@
 }
 
 .hide-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
 .hide-scrollbar {
