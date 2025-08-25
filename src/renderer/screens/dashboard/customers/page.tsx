@@ -1,8 +1,8 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { CustomerDetails, CustomerFilters, CustomerGrid, CustomerHeader, CustomerStats } from './components';
-import { Inventory, Order, Product } from 'src/types';
+import { CustomerDetails, CustomerFilters, CustomerGrid, CustomerHeader } from './components';
 import { useMemo, useState } from 'react';
 
+import { Order } from 'src/types';
 import useSWR from 'swr';
 
 interface CustomerData {
@@ -156,7 +156,7 @@ export default function CustomersPage() {
           <CustomerGrid customers={filteredCustomers} onSelectCustomer={setSelectedCustomer} selectedCustomer={selectedCustomer} />
         </div>
         <div className="lg:col-span-1">
-          <CustomerDetails customer={selectedCustomer} products={products || []} />
+          <CustomerDetails customer={selectedCustomer} />
         </div>
       </div>
     </div>
