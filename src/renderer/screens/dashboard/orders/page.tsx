@@ -6,7 +6,7 @@ import useSWR, { mutate } from 'swr';
 import { Order } from 'src/types';
 import { toast } from 'sonner';
 
-interface EnrichedOrder extends Order {
+type EnrichedOrder = Order & {
   total: number;
   itemsCount: number;
   productDetails: Array<{
@@ -18,7 +18,7 @@ interface EnrichedOrder extends Order {
     discount: number;
     finalPrice: number;
   }>;
-}
+};
 
 export default function OrdersPage() {
   const { data: orders, error } = useSWR('orders', () => window.api.db.get('orders'));

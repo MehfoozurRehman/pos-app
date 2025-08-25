@@ -5,11 +5,11 @@ import { CustomerCard } from './customer-card';
 import { Users } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-interface CustomerGridProps {
+type CustomerGridProps = {
   customers: CustomerData[];
   onSelectCustomer: (customer: CustomerData) => void;
   selectedCustomer: CustomerData | null;
-}
+};
 
 export function CustomerGrid({ customers, onSelectCustomer, selectedCustomer }: CustomerGridProps) {
   const [parent] = useAutoAnimate();

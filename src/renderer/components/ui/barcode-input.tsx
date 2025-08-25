@@ -5,7 +5,7 @@ import { Input } from './input';
 import { Label } from './label';
 import { toast } from 'sonner';
 
-interface BarcodeInputProps {
+type BarcodeInputProps = {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
@@ -13,7 +13,7 @@ interface BarcodeInputProps {
   label?: string;
   required?: boolean;
   className?: string;
-}
+};
 
 export function BarcodeInput({ value, onChange, disabled = false, placeholder = 'Enter or scan barcode', label = 'Barcode', required = false, className }: BarcodeInputProps) {
   const generateBarcode = () => {

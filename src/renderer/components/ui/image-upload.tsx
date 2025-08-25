@@ -6,7 +6,7 @@ import { Card } from './card';
 import { cn } from '@/utils';
 import { toast } from 'sonner';
 
-interface ImageUploadProps {
+type ImageUploadProps = {
   value?: string;
   onChange: (value: string | null) => void;
   className?: string;
@@ -14,7 +14,7 @@ interface ImageUploadProps {
   accept?: string;
   maxSize?: number;
   placeholder?: string;
-}
+};
 
 export function ImageUpload({ value, onChange, className, disabled = false, accept = 'image/*', maxSize = 5, placeholder = 'Click to upload or drag and drop' }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);

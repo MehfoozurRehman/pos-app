@@ -1,8 +1,8 @@
 import { ShoppingBag } from 'lucide-react';
 
-interface OrderHeaderProps {
+type OrderHeaderProps = {
   totalOrders: number;
-}
+};
 
 export function OrderHeader({ totalOrders }: OrderHeaderProps) {
   return (

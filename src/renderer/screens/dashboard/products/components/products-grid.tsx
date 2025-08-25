@@ -6,14 +6,14 @@ import { Product } from 'src/types';
 import { ProductCard } from './product-card';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-interface ProductsGridProps {
+type ProductsGridProps = {
   filteredProducts: Product[];
   searchQuery: string;
   selectedCategory: string;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onCreateProduct: () => void;
-}
+};
 
 export function ProductsGrid({ filteredProducts, searchQuery, selectedCategory, onEdit, onDelete, onCreateProduct }: ProductsGridProps) {
   const [parent] = useAutoAnimate();

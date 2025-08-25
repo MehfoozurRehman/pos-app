@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import useSWR from 'swr';
 
-interface AnalyticsData {
+type AnalyticsData = {
   totalRevenue: number;
   totalOrders: number;
   totalCustomers: number;
@@ -32,7 +32,7 @@ interface AnalyticsData {
     silver: number;
     bronze: number;
   };
-}
+};
 
 export default function Analytics() {
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));

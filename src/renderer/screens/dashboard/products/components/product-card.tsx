@@ -8,11 +8,11 @@ import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { Product } from 'src/types';
 import dayjs from 'dayjs';
 
-interface ProductCardProps {
+type ProductCardProps = {
   product: Product;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
-}
+};
 
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);

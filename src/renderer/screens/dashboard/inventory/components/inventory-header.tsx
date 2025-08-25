@@ -2,9 +2,9 @@ import { Package, Plus } from 'lucide-react';
 
 import { Button } from '@renderer/components/ui/button';
 
-interface InventoryHeaderProps {
+type InventoryHeaderProps = {
   onCreateInventory: () => void;
-}
+};
 
 export function InventoryHeader({ onCreateInventory }: InventoryHeaderProps) {
   return (

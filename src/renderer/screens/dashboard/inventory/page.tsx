@@ -6,12 +6,12 @@ import useSWR, { mutate } from 'swr';
 import { Inventory } from 'src/types';
 import { toast } from 'sonner';
 
-interface InventoryFormData {
+type InventoryFormData = {
   productId: string;
   barcode: string;
   actualPrice: number;
   sellingPrice: number;
-}
+};
 
 export default function InventoryPage() {
   const { data: inventory, error } = useSWR('inventory', () => window.api.db.get('inventory'));

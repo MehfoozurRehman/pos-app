@@ -5,13 +5,13 @@ import { OrderCard } from './order-card';
 import { ShoppingBag } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-interface OrderGridProps {
+type OrderGridProps = {
   orders: EnrichedOrder[];
   onSelectOrder: (order: EnrichedOrder) => void;
   selectedOrder: EnrichedOrder | null;
   onUpdateStatus: (orderId: string, status: string) => void;
   onDeleteOrder: (orderId: string) => void;
-}
+};
 
 export function OrderGrid({ orders, onSelectOrder, selectedOrder, onUpdateStatus, onDeleteOrder }: OrderGridProps) {
   const [parent] = useAutoAnimate();

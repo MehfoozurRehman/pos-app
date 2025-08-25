@@ -12,26 +12,26 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
 
-interface InventoryFormData {
+type InventoryFormData = {
   productId: string;
   barcode: string;
   actualPrice: number;
   sellingPrice: number;
-}
+};
 
-interface ProductOption {
+type ProductOption = {
   value: string;
   label: string;
-}
+};
 
-interface InventoryFormProps {
+type InventoryFormProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   editingInventory: Inventory | null;
   onSubmit: (data: InventoryFormData) => Promise<void>;
   isSubmitting: boolean;
   productOptions: ProductOption[];
-}
+};
 
 const initialFormData: InventoryFormData = {
   productId: '',

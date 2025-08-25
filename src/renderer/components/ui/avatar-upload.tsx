@@ -6,14 +6,14 @@ import { Button } from './button';
 import { cn } from '@/utils';
 import { toast } from 'sonner';
 
-interface AvatarUploadProps {
+type AvatarUploadProps = {
   value?: string;
   onChange: (value: string | null) => void;
   className?: string;
   disabled?: boolean;
   size?: 'sm' | 'md' | 'lg';
   fallback?: React.ReactNode;
-}
+};
 
 const sizeClasses = {
   sm: 'w-16 h-16',

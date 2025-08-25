@@ -2,13 +2,13 @@ import { Button } from '@renderer/components/ui/button';
 import { Input } from '@renderer/components/ui/input';
 import { Search } from 'lucide-react';
 
-interface ProductFiltersProps {
+type ProductFiltersProps = {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
   categories: string[];
-}
+};
 
 export function ProductFilters({ searchQuery, onSearchChange, selectedCategory, onCategoryChange, categories }: ProductFiltersProps) {
   return (

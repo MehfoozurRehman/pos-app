@@ -2,18 +2,18 @@ import { Button } from '@renderer/components/ui/button';
 import { Input } from '@renderer/components/ui/input';
 import { Search } from 'lucide-react';
 
-interface ProductOption {
+type ProductOption = {
   value: string;
   label: string;
-}
+};
 
-interface InventoryFiltersProps {
+type InventoryFiltersProps = {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedProduct: string;
   onProductChange: (productId: string) => void;
   productOptions: ProductOption[];
-}
+};
 
 export function InventoryFilters({ searchQuery, onSearchChange, selectedProduct, onProductChange, productOptions }: InventoryFiltersProps) {
   return (

@@ -10,13 +10,13 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-interface OrderCardProps {
+type OrderCardProps = {
   order: Order & { total: number; itemsCount: number };
   onClick: () => void;
   isSelected: boolean;
   onUpdateStatus: (orderId: string, status: string) => void;
   onDeleteOrder: (orderId: string) => void;
-}
+};
 
 export function OrderCard({ order, onClick, isSelected, onUpdateStatus, onDeleteOrder }: OrderCardProps) {
   const getStatusColor = (status: string) => {

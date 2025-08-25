@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Order } from 'src/types';
 import useSWR from 'swr';
 
-interface CustomerData {
+type CustomerData = {
   name: string;
   phone: string;
   totalOrders: number;
@@ -19,7 +19,7 @@ interface CustomerData {
     totalSpent: number;
   }>;
   orders: Order[];
-}
+};
 
 export default function CustomersPage() {
   const { data: orders, error } = useSWR('orders', () => window.api.db.get('orders'));

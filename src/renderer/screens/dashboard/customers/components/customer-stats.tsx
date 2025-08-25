@@ -3,9 +3,9 @@ import { DollarSign, ShoppingBag, TrendingUp, Users } from 'lucide-react';
 
 import { CustomerData } from 'src/types';
 
-interface CustomerStatsProps {
+type CustomerStatsProps = {
   customers: CustomerData[];
-}
+};
 
 export function CustomerStats({ customers }: CustomerStatsProps) {
   const totalCustomers = customers.length;

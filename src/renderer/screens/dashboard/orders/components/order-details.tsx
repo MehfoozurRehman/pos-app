@@ -13,10 +13,10 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-interface OrderDetailsProps {
+type OrderDetailsProps = {
   order: EnrichedOrder | null;
   onUpdateStatus: (orderId: string, status: string) => void;
-}
+};
 
 export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
   if (!order) {

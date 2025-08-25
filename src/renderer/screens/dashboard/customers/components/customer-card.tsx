@@ -8,11 +8,11 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-interface CustomerCardProps {
+type CustomerCardProps = {
   customer: CustomerData;
   onClick: () => void;
   isSelected: boolean;
-}
+};
 
 export function CustomerCard({ customer, onClick, isSelected }: CustomerCardProps) {
   const getCustomerTier = (totalSpent: number) => {

@@ -8,17 +8,17 @@ import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { Inventory } from 'src/types';
 import dayjs from 'dayjs';
 
-interface EnrichedInventory extends Inventory {
+type EnrichedInventory = Inventory & {
   productName: string;
   productImage: string;
   productCategories: string[];
-}
+};
 
-interface InventoryCardProps {
+type InventoryCardProps = {
   item: EnrichedInventory;
   onEdit: (item: Inventory) => void;
   onDelete: (item: Inventory) => void;
-}
+};
 
 export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);

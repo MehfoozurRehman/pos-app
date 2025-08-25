@@ -1,9 +1,9 @@
 import { Button } from '@renderer/components/ui/button';
 import { Plus } from 'lucide-react';
 
-interface ProductsHeaderProps {
+type ProductsHeaderProps = {
   onCreateProduct: () => void;
-}
+};
 
 export function ProductsHeader({ onCreateProduct }: ProductsHeaderProps) {
   return (

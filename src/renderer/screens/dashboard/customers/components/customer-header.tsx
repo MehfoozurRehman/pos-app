@@ -1,8 +1,8 @@
 import { Users } from 'lucide-react';
 
-interface CustomerHeaderProps {
+type CustomerHeaderProps = {
   totalCustomers: number;
-}
+};
 
 export function CustomerHeader({ totalCustomers }: CustomerHeaderProps) {
   return (

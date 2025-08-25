@@ -6,20 +6,20 @@ import { Inventory } from 'src/types';
 import { InventoryCard } from './inventory-card';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-interface EnrichedInventory extends Inventory {
+type EnrichedInventory = Inventory & {
   productName: string;
   productImage: string;
   productCategories: string[];
-}
+};
 
-interface InventoryGridProps {
+type InventoryGridProps = {
   filteredInventory: EnrichedInventory[];
   searchQuery: string;
   selectedProduct: string;
   onEdit: (item: Inventory) => void;
   onDelete: (item: Inventory) => void;
   onCreateInventory: () => void;
-}
+};
 
 export function InventoryGrid({ filteredInventory, searchQuery, selectedProduct, onEdit, onDelete, onCreateInventory }: InventoryGridProps) {
   const [parent] = useAutoAnimate();

@@ -13,7 +13,7 @@ import { Textarea } from '@renderer/components/ui/textarea';
 import { toast } from 'sonner';
 import { useTheme } from '@renderer/components/theme-provider';
 
-interface ShopFormData {
+type ShopFormData = {
   name: string;
   owner: string;
   location: string;
@@ -22,7 +22,7 @@ interface ShopFormData {
   description: string;
   logo: string;
   theme: 'light' | 'dark' | 'system';
-}
+};
 
 const initialFormData: ShopFormData = {
   name: '',

@@ -3,12 +3,12 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Loader } from 'lucide-react';
 import { getMediaUrl } from '@/utils/media';
 
-interface ImageWithFallbackProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+type ImageWithFallbackProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   src?: string;
   fallback: ReactNode;
   localPath?: string;
   remoteUrl?: string;
-}
+};
 
 export function ImageWithFallback({ fallback, src, localPath, remoteUrl, ...props }: ImageWithFallbackProps) {
   const [isLoaded, setIsLoaded] = useState(false);

@@ -324,11 +324,11 @@ function ProductsPanel() {
   );
 }
 
-interface EnrichedProduct extends Product {
+type EnrichedProduct = Product & {
   averagePrice: number;
   stockCount: number;
   inStock: boolean;
-}
+};
 
 function ProductCard({ product }: { product: EnrichedProduct }) {
   const [, setCart] = useAtom(cartAtom);

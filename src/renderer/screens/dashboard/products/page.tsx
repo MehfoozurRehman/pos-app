@@ -6,12 +6,12 @@ import useSWR, { mutate } from 'swr';
 import { Product } from 'src/types';
 import { toast } from 'sonner';
 
-interface ProductFormData {
+type ProductFormData = {
   name: string;
   description: string;
   categories: string[];
   picture: string;
-}
+};
 
 export default function Products() {
   const { data: products, error } = useSWR('products', () => window.api.db.get('products'));

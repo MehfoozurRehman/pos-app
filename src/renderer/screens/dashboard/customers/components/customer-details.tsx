@@ -12,9 +12,9 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-interface CustomerDetailsProps {
+type CustomerDetailsProps = {
   customer: CustomerData | null;
-}
+};
 
 export function CustomerDetails({ customer }: CustomerDetailsProps) {
   if (!customer) {

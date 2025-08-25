@@ -3,12 +3,12 @@ import { Search, SortAsc } from 'lucide-react';
 import { Button } from '@renderer/components/ui/button';
 import { Input } from '@renderer/components/ui/input';
 
-interface CustomerFiltersProps {
+type CustomerFiltersProps = {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   sortBy: 'name' | 'orders' | 'spent' | 'lastOrder';
   onSortChange: (sort: 'name' | 'orders' | 'spent' | 'lastOrder') => void;
-}
+};
 
 export function CustomerFilters({ searchQuery, onSearchChange, sortBy, onSortChange }: CustomerFiltersProps) {
   const sortOptions = [

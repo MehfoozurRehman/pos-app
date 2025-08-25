@@ -3,14 +3,14 @@ import { Filter, Search, SortAsc } from 'lucide-react';
 import { Button } from '@renderer/components/ui/button';
 import { Input } from '@renderer/components/ui/input';
 
-interface OrderFiltersProps {
+type OrderFiltersProps = {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   statusFilter: string;
   onStatusChange: (status: string) => void;
   sortBy: 'date' | 'total' | 'customer' | 'status';
   onSortChange: (sort: 'date' | 'total' | 'customer' | 'status') => void;
-}
+};
 
 export function OrderFilters({ searchQuery, onSearchChange, statusFilter, onStatusChange, sortBy, onSortChange }: OrderFiltersProps) {
   const statusOptions = [

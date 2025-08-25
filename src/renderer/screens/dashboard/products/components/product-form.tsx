@@ -12,20 +12,20 @@ import { Textarea } from '@renderer/components/ui/textarea';
 import { toast } from 'sonner';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
 
-interface ProductFormData {
+type ProductFormData = {
   name: string;
   description: string;
   categories: string[];
   picture: string;
-}
+};
 
-interface ProductFormProps {
+type ProductFormProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   editingProduct: Product | null;
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting: boolean;
-}
+};
 
 const initialFormData: ProductFormData = {
   name: '',

@@ -3,9 +3,9 @@ import { Card, CardContent } from '@renderer/components/ui/card';
 
 import { EnrichedOrder } from 'src/types';
 
-interface OrderStatsProps {
+type OrderStatsProps = {
   orders: EnrichedOrder[];
-}
+};
 
 export function OrderStats({ orders }: OrderStatsProps) {
   const totalOrders = orders.length;
