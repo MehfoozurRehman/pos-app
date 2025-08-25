@@ -49,6 +49,10 @@ export type Shop = {
   logo: string;
   logoUrl?: string;
   location: string;
+  phone?: string;
+  email?: string;
+  description?: string;
+  theme?: 'light' | 'dark' | 'system';
   createdAt?: string;
 };
 
