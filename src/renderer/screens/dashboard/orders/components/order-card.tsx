@@ -4,27 +4,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
+import { Order } from 'src/types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-interface EnrichedOrder {
-  id: string;
-  orderId: string;
-  status: string;
-  customerName: string;
-  customerPhone: string;
-  items: any[];
-  discount?: number;
-  createdAt: string;
-  total: number;
-  itemsCount: number;
-  productDetails: any[];
-}
-
 interface OrderCardProps {
-  order: EnrichedOrder;
+  order: Order & { total: number; itemsCount: number };
   onClick: () => void;
   isSelected: boolean;
   onUpdateStatus: (orderId: string, status: string) => void;
