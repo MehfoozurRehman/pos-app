@@ -55,7 +55,7 @@ function GlobalBarcodeScanner() {
   const [barcodeBuffer, setBarcodeBuffer] = useState('');
   const [lastInputTime, setLastInputTime] = useState(0);
 
-  // Cleanup old temporary cart orders (older than 1 hour)
+
   useEffect(() => {
     const cleanupOldCarts = async () => {
       if (!orders) return;
@@ -79,8 +79,8 @@ function GlobalBarcodeScanner() {
       }
     };
 
-    const interval = setInterval(cleanupOldCarts, 5 * 60 * 1000); // Run every 5 minutes
-    cleanupOldCarts(); // Run immediately
+    const interval = setInterval(cleanupOldCarts, 5 * 60 * 1000);
+    cleanupOldCarts();
 
     return () => clearInterval(interval);
   }, [orders]);
@@ -138,14 +138,13 @@ function GlobalBarcodeScanner() {
         return;
       }
 
-      // Validate inventory item
+
       if (!inventoryItem.productId || inventoryItem.sellingPrice < 0) {
         toast.error(`Invalid inventory data for "${product.name}". Please contact support.`);
         return;
       }
     let updatedCart: Order | undefined;
     setCart((prev) => {
-      // Create a new cart session if none exists
       const cart = prev || {
         id: `cart-${Date.now()}`,
         orderId: `#cart-${Date.now()}`,
@@ -158,14 +157,14 @@ function GlobalBarcodeScanner() {
         updatedAt: new Date().toISOString(),
       };
 
-      // Check if item already exists in cart
+
       const existingItem = cart.items.find((item) => item.barcode === barcode);
       if (existingItem) {
         toast.error(`This item is already in your cart. You can modify quantity from the cart panel.`);
         return prev;
       }
 
-      // Add new item to cart
+
       updatedCart = {
         ...cart,
         items: [
@@ -183,7 +182,7 @@ function GlobalBarcodeScanner() {
       return updatedCart;
     });
 
-    // Save/update cart in database after state update
+
     if (updatedCart) {
       try {
         const existingCart = await window.api.db.get('orders').then(orders => 
@@ -242,10 +241,9 @@ function GlobalBarcodeScanner() {
           addToCartByBarcode(trimmedBarcode);
           setBarcodeBuffer('');
         } else if (trimmedBarcode) {
-          // Clear invalid short barcodes without showing error
           setBarcodeBuffer('');
         }
-      }, 300); // Increased timeout to 300ms
+      }, 300);
 
       return () => clearTimeout(timer);
     }
@@ -352,10 +350,10 @@ function DashboardStats() {
     const completedOrders = orders.filter((order: Order) => order.status === 'completed');
     const todayCompleted = completedOrders.filter((order: Order) => dayjs(order.createdAt).isAfter(today));
 
-    // Calculate total revenue from completed orders
+
     const totalRevenue = completedOrders.reduce((sum: number, order: Order) => {
       const orderTotal = order.items.reduce((itemSum: number, item) => {
-        // Find the exact inventory item by barcode
+
         const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
         
         if (!inventoryItem) {
@@ -365,14 +363,14 @@ function DashboardStats() {
 
         const price = inventoryItem.sellingPrice || 0;
         const discount = item.discount || 0;
-        return itemSum + Math.max(0, price - discount); // Ensure non-negative price
+        return itemSum + Math.max(0, price - discount);
       }, 0);
       
       const orderDiscount = order.discount || 0;
-      return sum + Math.max(0, orderTotal - orderDiscount); // Ensure non-negative total
+      return sum + Math.max(0, orderTotal - orderDiscount);
     }, 0);
 
-    // Calculate low stock items (products with less than 5 inventory items)
+
     const productStockCounts = new Map<string, number>();
     inventory.forEach((inv) => {
       const currentCount = productStockCounts.get(inv.productId) || 0;
@@ -579,14 +577,14 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
       let found;
 
       if (barcode.trim()) {
-        // Look for specific barcode for this product
+
         found = inv.find((i) => i.barcode === barcode.trim() && i.productId === product.id);
         if (!found) {
           toast.error(`Barcode "${barcode.trim()}" not found for ${product.name}. Please verify the barcode.`);
           return;
         }
       } else {
-        // Get current cart state to check for used barcodes
+
         const currentCart = await new Promise<any>((resolve) => {
           setCart((prev) => {
             resolve(prev);
@@ -598,8 +596,8 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         const availableItems = inv.filter((i) => 
           i.productId === product.id && 
           !usedBarcodes.includes(i.barcode) &&
-          i.barcode && // Ensure barcode exists
-          i.sellingPrice > 0 // Ensure valid selling price
+          i.barcode &&
+          i.sellingPrice > 0
         );
 
         if (availableItems.length === 0) {
@@ -609,7 +607,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         found = availableItems[0];
       }
 
-      // Validate the found inventory item
+
       if (!found.barcode || !found.productId || found.sellingPrice < 0) {
         toast.error('Invalid inventory item data');
         return;
@@ -619,7 +617,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
       let updatedCart: Order | undefined;
 
       setCart((prev) => {
-        // Create a new cart session if none exists
+
         const cart = prev || {
           id: `cart-${Date.now()}`,
           orderId: `#cart-${Date.now()}`,
@@ -632,14 +630,14 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
           updatedAt: new Date().toISOString(),
         };
 
-        // Check if item already exists in cart
+
         const existingItem = cart.items.find((item) => item.barcode === found.barcode);
         if (existingItem) {
           toast.error(`"${product.name}" is already in your cart. You can modify quantity from the cart.`);
           return prev;
         }
 
-        // Add new item to cart
+
         updatedCart = {
           ...cart,
           items: [
@@ -658,7 +656,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         return updatedCart;
       });
 
-      // Save/update cart in database after state update
+
       if (additionSuccessful && updatedCart) {
         try {
           const existingCart = await window.api.db.get('orders').then(orders => 
@@ -691,7 +689,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
 
   useEffect(() => {
     if (product.picture) {
-      if (product.picture.startsWith('http') || product.picture.startsWith('file://')) {
+      if (product.picture.startsWith('http') || product.picture.startsWith('file:')) {
         setImageUrl(product.picture);
       } else {
         window.api.media.getUrl(product.picture).then((url) => {
@@ -863,7 +861,7 @@ function OrderCard({ order }: { order: Order }) {
   };
 
   const handleDeleteOrder = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
     try {
       await window.api.db.delete('orders', order.id);
       mutate('orders');
@@ -938,7 +936,7 @@ function OrderDetails() {
 
       const unitPrice = inventoryItem?.sellingPrice || 0;
       const discount = item.discount || 0;
-      const totalPrice = Math.max(0, unitPrice - discount); // Ensure non-negative price
+      const totalPrice = Math.max(0, unitPrice - discount);
 
       return {
         id: `${item.productId}-${item.barcode}-${index}`,
@@ -962,7 +960,7 @@ function OrderDetails() {
     try {
       setIsClearingCart(true);
       if (cart && cart.id && cart.status === 'cart') {
-        // Remove temporary cart order from database
+
         await window.api.db.delete('orders', cart.id);
         mutate('orders');
       }
@@ -970,7 +968,7 @@ function OrderDetails() {
       toast.success('✓ Cart cleared successfully! All items have been removed.');
     } catch (error) {
       console.error('Error clearing cart:', error);
-      setCart(null); // Clear cart from state even if database operation fails
+      setCart(null);
       toast.success('✓ Cart cleared successfully! All items have been removed.');
     } finally {
       setIsClearingCart(false);
@@ -993,7 +991,7 @@ function OrderDetails() {
   const handleUpdateCustomer = (field: 'customerName' | 'customerPhone', value: string) => {
     if (!cart) return;
     
-    // Validate input based on field type
+
     let validatedValue = value;
     
     if (field === 'customerPhone' && value) {
@@ -1022,7 +1020,7 @@ function OrderDetails() {
         return;
       }
 
-      // Validate cart items
+
       if (!cart.items.every(item => item.barcode && item.quantity > 0)) {
         toast.error('Some items in your cart are invalid. Please remove them and try again.');
         return;
@@ -1038,7 +1036,7 @@ function OrderDetails() {
         updatedAt: new Date().toISOString(),
       };
 
-      // If updating existing cart order, use update instead of create
+
       if (cart.id && cart.status === 'cart') {
         await window.api.db.update('orders', cart.id, orderData);
       } else {
@@ -1063,13 +1061,13 @@ function OrderDetails() {
         return;
       }
 
-      // Validate cart items
+
       if (!cart.items.every(item => item.barcode && item.quantity > 0)) {
         toast.error('Some items in your cart are invalid. Please remove them and try again.');
         return;
       }
 
-      // Validate customer data for checkout
+
       if (!cart.customerName?.trim()) {
         toast.error('Please enter customer name before proceeding with checkout.');
         return;
@@ -1085,7 +1083,7 @@ function OrderDetails() {
         updatedAt: new Date().toISOString(),
       };
 
-      // If updating existing cart order, use update instead of create
+
       if (cart.id && cart.status === 'cart') {
         await window.api.db.update('orders', cart.id, orderData);
       } else {
