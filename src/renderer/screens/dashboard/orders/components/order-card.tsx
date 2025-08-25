@@ -1,9 +1,9 @@
+import { Calendar, DollarSign, MoreVertical, Package, Phone, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { Phone, Package, DollarSign, Calendar, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/components/ui/dropdown-menu';
 
 import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/components/ui/dropdown-menu';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
