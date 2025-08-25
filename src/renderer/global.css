@@ -775,3 +775,20 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.style-scrollbar {
+  background-color: transparent;
+}
+
+.style-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.style-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--muted-foreground);
+  border-radius: 10px;
+}
+
+.style-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--foreground);
+}
