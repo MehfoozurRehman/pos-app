@@ -14,7 +14,6 @@ export function ImageWithFallback({ fallback, src, localPath, remoteUrl, ...prop
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
   const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
-  console.log('ImageWithFallback props:', { src, localPath, remoteUrl });
 
   useEffect(() => {
     async function resolveSrc() {
@@ -30,7 +29,6 @@ export function ImageWithFallback({ fallback, src, localPath, remoteUrl, ...prop
 
       if (localPath) {
         const url = await getMediaUrl(localPath);
-        console.log(url);
         setResolvedSrc(url);
         return;
       }
