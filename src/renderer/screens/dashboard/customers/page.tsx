@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { CustomerFilters, CustomerGrid, CustomerHeader, CustomerDetails } from './components';
+import { CustomerFilters, CustomerGrid, CustomerHeader, CustomerDetails, CustomerStats } from './components';
 import { useMemo, useState } from 'react';
 import useSWR from 'swr';
 
