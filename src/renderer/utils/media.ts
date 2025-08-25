@@ -98,10 +98,6 @@ export async function getBestMediaUrl(localPath?: string, remoteUrl?: string): P
   return null;
 }
 
-export async function cleanupOrphanedMedia(usedMediaFiles: string[]): Promise<void> {
-  console.log('Cleanup orphaned media files:', usedMediaFiles);
-}
-
 export function validateMediaFile(file: File): { valid: boolean; error?: string } {
   if (!file.type.startsWith('image/')) {
     return { valid: false, error: 'File must be an image' };
