@@ -9,7 +9,6 @@ import { ImageUpload } from '@renderer/components/ui/image-upload';
 import { Input } from '@renderer/components/ui/input';
 import { Label } from '@renderer/components/ui/label';
 import { Separator } from '@renderer/components/ui/separator';
-import { Shop } from 'src/types';
 import { Textarea } from '@renderer/components/ui/textarea';
 import { toast } from 'sonner';
 import { useTheme } from '@renderer/components/theme-provider';
@@ -94,7 +93,6 @@ export default function Settings() {
         });
       }
 
-      // Apply theme change immediately
       setTheme(formData.theme);
 
       await mutate('shop');
@@ -115,7 +113,6 @@ export default function Settings() {
   return (
     <div className="w-full p-6 space-y-6 mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Shop Details Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -125,13 +122,10 @@ export default function Settings() {
             <CardDescription>Configure your shop information and branding.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Shop Logo */}
             <div className="space-y-2">
               <Label>Shop Logo</Label>
               <ImageUpload value={formData.logo} onChange={(value) => setFormData((prev) => ({ ...prev, logo: value || '' }))} disabled={isSubmitting} placeholder="Upload your shop logo" />
             </div>
-
-            {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="flex items-center gap-2">
@@ -140,7 +134,6 @@ export default function Settings() {
                 </Label>
                 <Input id="name" value={formData.name} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} placeholder="Enter shop name" disabled={isSubmitting} required />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="owner" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -156,8 +149,6 @@ export default function Settings() {
                 />
               </div>
             </div>
-
-            {/* Contact Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2">
@@ -173,7 +164,6 @@ export default function Settings() {
                   disabled={isSubmitting}
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
@@ -189,8 +179,6 @@ export default function Settings() {
                 />
               </div>
             </div>
-
-            {/* Location */}
             <div className="space-y-2">
               <Label htmlFor="location" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -204,8 +192,6 @@ export default function Settings() {
                 disabled={isSubmitting}
               />
             </div>
-
-            {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Shop Description</Label>
               <Textarea
@@ -219,8 +205,6 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Theme Settings Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -259,9 +243,7 @@ export default function Settings() {
               </Select>
               <p className="text-sm text-muted-foreground">Choose your preferred theme. System will use your device's theme setting.</p>
             </div>
-
             <Separator />
-
             <div className="space-y-2">
               <Label>Current Theme</Label>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -287,8 +269,6 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Save Button */}
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
             {isSubmitting ? (
