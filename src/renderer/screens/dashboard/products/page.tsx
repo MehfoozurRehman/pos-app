@@ -86,7 +86,7 @@ export default function Products() {
       if (editingProduct) {
         await window.api.db.update('products', editingProduct.id, productData);
       } else {
-        await window.api.db.create('products', productData as any);
+        await window.api.db.create('products', productData);
       }
 
       await mutate('products');
