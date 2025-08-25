@@ -29,8 +29,8 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   }, [product.picture]);
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-square relative bg-muted">
+    <Card className="group overflow-hidden hover:shadow-lg transition-shadow gap-0">
+      <div className="aspect-video relative bg-muted">
         {imageUrl ? (
           <ImageWithFallback src={imageUrl} alt={product.name} className="w-full h-full object-cover" fallback={<ImageIcon className="w-12 h-12 text-muted-foreground" />} />
         ) : (
@@ -49,13 +49,13 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           </div>
         </div>
       </div>
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-sm mb-1 line-clamp-1">{product.name}</h3>
-        {product.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{product.description}</p>}
+      <CardContent className="p-4 pb-0">
+        <h3 className="font-semibold text-lg mb-1 line-clamp-1 capitalize">{product.name}</h3>
+        {product.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2 capitalize">{product.description}</p>}
         {product.categories && product.categories.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {product.categories.slice(0, 2).map((category) => (
-              <Badge key={category} variant="secondary" className="text-xs">
+              <Badge key={category} variant="secondary" className="text-xs capitalize">
                 {category}
               </Badge>
             ))}
