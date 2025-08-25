@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Loader2, Upload, User, X } from 'lucide-react';
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from './button';
 import { cn } from '@/utils';
@@ -26,7 +26,7 @@ export function AvatarUpload({ value, onChange, className, disabled = false, siz
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (value) {
       if (!value.startsWith('http') && !value.startsWith('file://')) {
         window.api.media.getUrl(value).then((url) => {
