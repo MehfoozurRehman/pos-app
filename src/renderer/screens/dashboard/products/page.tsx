@@ -15,6 +15,7 @@ interface ProductFormData {
 
 export default function Products() {
   const { data: products, error } = useSWR('products', () => window.api.db.get('products'));
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -109,13 +110,9 @@ export default function Products() {
   return (
     <div className="p-6 space-y-6">
       <ProductsHeader onCreateProduct={handleCreateProduct} />
-
       <ProductForm isOpen={isCreateOpen} onOpenChange={setIsCreateOpen} editingProduct={editingProduct} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
-
       <ProductFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} categories={categories} />
-
       <ProductsGrid
-        products={products}
         filteredProducts={filteredProducts}
         searchQuery={searchQuery}
         selectedCategory={selectedCategory}
