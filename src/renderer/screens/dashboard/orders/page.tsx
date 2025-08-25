@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { Inventory, Order, Product } from 'src/types';
 import { OrderDetails, OrderFilters, OrderGrid, OrderHeader, OrderStats } from './components';
 import { useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
+import { Order } from 'src/types';
 import { toast } from 'sonner';
 
 interface EnrichedOrder extends Order {
