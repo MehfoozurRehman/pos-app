@@ -39,15 +39,6 @@ export function NavUser({ user }: { user: { name: string; email: string; avatar:
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard/billing">
-                  <IconCreditCard />
-                  Billing
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
             <DropdownMenuItem>
               <IconLogout />
               Log out
