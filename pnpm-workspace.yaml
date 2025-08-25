@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - core-js-pure
+  - electron
+  - electron-winstaller
+  - esbuild
+  - sharp
+  - unrs-resolver
