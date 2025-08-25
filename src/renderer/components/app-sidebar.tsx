@@ -52,11 +52,6 @@ const data = {
       url: '/dashboard/settings',
       icon: IconSettings2,
     },
-    {
-      title: 'Get Help',
-      url: '/dashboard/help',
-      icon: IconHelpCircle,
-    },
   ],
 };
 
