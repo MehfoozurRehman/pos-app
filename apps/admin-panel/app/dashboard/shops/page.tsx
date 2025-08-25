@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { api } from '@/convex/_generated/api';
 import { fetchQuery } from 'convex/nextjs';
 
@@ -13,7 +14,7 @@ export default async function ShopsPage() {
         {shops.map((s) => (
           <Link key={s._id} href={`/dashboard/shops/${s._id}`} className="p-4 border rounded hover:shadow">
             <div className="flex items-center gap-4">
-              <img src={s.logo || '/file.svg'} alt={s.name} className="w-12 h-12 object-cover rounded" />
+              <Image src={s.logo || '/file.svg'} alt={s.name} width={48} height={48} className="object-cover rounded" />
               <div>
                 <div className="font-medium">{s.name}</div>
                 <div className="text-sm text-muted-foreground">{s.location}</div>
