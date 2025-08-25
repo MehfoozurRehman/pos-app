@@ -1,21 +1,22 @@
 import './global.css';
 
 import { RouterProvider, createHashRouter } from 'react-router';
+import { StrictMode, lazy } from 'react';
 
-import Analytics from './screens/dashboard/analytics/page';
-import Customers from './screens/dashboard/customers/page';
-import Dashboard from './screens/dashboard/page';
-import Inventory from './screens/dashboard/inventory/page';
-import Layout from './screens/dashboard/layout';
-import Login from './screens/page';
-import NotFound from './screens/not-found/page';
-import Orders from './screens/dashboard/orders/page';
-import Products from './screens/dashboard/products/page';
-import Settings from './screens/dashboard/settings/page';
-import { StrictMode } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from './components/ui/sonner';
 import { createRoot } from 'react-dom/client';
+
+const Customers = lazy(() => import('./screens/dashboard/customers/page'));
+const Dashboard = lazy(() => import('./screens/dashboard/page'));
+const Inventory = lazy(() => import('./screens/dashboard/inventory/page'));
+const Layout = lazy(() => import('./screens/dashboard/layout'));
+const Login = lazy(() => import('./screens/page'));
+const NotFound = lazy(() => import('./screens/not-found/page'));
+const Orders = lazy(() => import('./screens/dashboard/orders/page'));
+const Products = lazy(() => import('./screens/dashboard/products/page'));
+const Settings = lazy(() => import('./screens/dashboard/settings/page'));
+const Analytics = lazy(() => import('./screens/dashboard/analytics/page'));
 
 const router = createHashRouter([
   {
