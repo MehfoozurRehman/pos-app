@@ -1,30 +1,9 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
 
+import { EnrichedOrder } from 'src/types';
 import { OrderCard } from './order-card';
 import { ShoppingBag } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-
-interface EnrichedOrder {
-  id: string;
-  orderId: string;
-  status: string;
-  customerName: string;
-  customerPhone: string;
-  items: any[];
-  discount?: number;
-  createdAt: string;
-  total: number;
-  itemsCount: number;
-  productDetails: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    barcode: string;
-    price: number;
-    discount: number;
-    finalPrice: number;
-  }>;
-}
 
 interface OrderGridProps {
   orders: EnrichedOrder[];
