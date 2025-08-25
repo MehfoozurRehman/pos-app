@@ -54,7 +54,6 @@ function GlobalBarcodeScanner() {
   const [barcodeBuffer, setBarcodeBuffer] = useState('');
   const [lastInputTime, setLastInputTime] = useState(0);
 
-  // Auto-focus the barcode input when component mounts and keep it focused
   useEffect(() => {
     const focusInput = () => {
       if (barcodeInputRef.current && document.activeElement !== barcodeInputRef.current) {
@@ -62,15 +61,12 @@ function GlobalBarcodeScanner() {
       }
     };
 
-    // Focus initially
     focusInput();
 
-    // Re-focus when clicking anywhere on the page
     const handleClick = () => {
       setTimeout(focusInput, 10);
     };
 
-    // Re-focus when pressing any key
     const handleKeyDown = () => {
       setTimeout(focusInput, 10);
     };
@@ -78,7 +74,6 @@ function GlobalBarcodeScanner() {
     document.addEventListener('click', handleClick);
     document.addEventListener('keydown', handleKeyDown);
 
-    // Re-focus periodically to ensure it stays focused
     const interval = setInterval(focusInput, 1000);
 
     return () => {
@@ -94,21 +89,18 @@ function GlobalBarcodeScanner() {
       return;
     }
 
-    // Find the inventory item by barcode
     const inventoryItem = inventory.find((item) => item.barcode === barcode);
     if (!inventoryItem) {
       toast.error(`Product with barcode ${barcode} not found`);
       return;
     }
 
-    // Find the product details
     const product = products.find((p) => p.id === inventoryItem.productId);
     if (!product) {
       toast.error('Product details not found');
       return;
     }
 
-    // Add to cart
     setCart((prev) => {
       if (prev === null) return null;
 
@@ -123,14 +115,12 @@ function GlobalBarcodeScanner() {
         createdAt: new Date().toISOString(),
       };
 
-      // Check if item is already in cart
       const existingItem = draft.items.find((item) => item.barcode === barcode);
       if (existingItem) {
         toast.error('This item is already in the cart');
         return prev;
       }
 
-      // Add the item
       draft.items = [
         ...(draft.items || []),
         {
@@ -150,7 +140,6 @@ function GlobalBarcodeScanner() {
     const value = e.target.value;
     const currentTime = Date.now();
 
-    // If more than 100ms has passed since last input, start a new barcode
     if (currentTime - lastInputTime > 100) {
       setBarcodeBuffer(value);
     } else {
@@ -159,7 +148,6 @@ function GlobalBarcodeScanner() {
 
     setLastInputTime(currentTime);
 
-    // Clear the input immediately to prepare for next scan
     e.target.value = '';
   };
 
@@ -171,7 +159,6 @@ function GlobalBarcodeScanner() {
     }
   };
 
-  // Auto-submit barcode after a short delay (typical for barcode scanners)
   useEffect(() => {
     if (barcodeBuffer.length > 0) {
       const timer = setTimeout(() => {
@@ -179,7 +166,7 @@ function GlobalBarcodeScanner() {
           addToCartByBarcode(barcodeBuffer.trim());
           setBarcodeBuffer('');
         }
-      }, 50); // 50ms delay after last character
+      }, 50);
 
       return () => clearTimeout(timer);
     }
@@ -288,22 +275,18 @@ function DashboardStats() {
 
     const totalRevenue = completedOrders.reduce((sum: number, order: Order) => {
       const orderTotal = order.items.reduce((itemSum: number, item) => {
-        // Try to find the inventory item first (for current items)
         let inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
 
-        // If not found in current inventory (because it was sold),
-        // we need to calculate based on other items of the same product
-        if (!inventoryItem) {
-          const product = products.find((p) => p.id === item.productId);
-          if (product) {
-            const productInventory = inventory.filter((inv) => inv.productId === product.id);
-            if (productInventory.length > 0) {
-              // Use average price of remaining inventory for this product
-              const avgPrice = productInventory.reduce((sum, inv) => sum + inv.sellingPrice, 0) / productInventory.length;
-              inventoryItem = { sellingPrice: avgPrice } as any;
+            if (!inventoryItem) {
+              const product = products.find((p) => p.id === item.productId);
+              if (product) {
+                const productInventory = inventory.filter((inv) => inv.productId === product.id);
+                if (productInventory.length > 0) {
+                  const avgPrice = productInventory.reduce((sum, inv) => sum + inv.sellingPrice, 0) / productInventory.length;
+                  inventoryItem = { sellingPrice: avgPrice } as any;
+                }
+              }
             }
-          }
-        }
 
         const price = inventoryItem?.sellingPrice || 0;
         const discount = item.discount || 0;
@@ -513,7 +496,6 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
           return;
         }
       } else {
-        // Get current cart to check which items are already used
         const currentCart = await new Promise<any>((resolve) => {
           setCart((prev) => {
             resolve(prev);
@@ -521,7 +503,6 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
           });
         });
 
-        // Filter out items that are already in the current cart
         const usedBarcodes = currentCart?.items?.map((item: any) => item.barcode) || [];
         const availableItems = inv.filter((i) => i.productId === product.id && !usedBarcodes.includes(i.barcode));
 
@@ -532,7 +513,6 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         found = availableItems[0];
       }
 
-      // Double-check that the item isn't already in cart
       let additionSuccessful = false;
 
       setCart((prev) => {
@@ -569,7 +549,7 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
       if (additionSuccessful) {
         toast.success(`Added ${product.name} to cart`);
         setShowAddDrawer(false);
-        setBarcode(''); // Clear barcode input
+        setBarcode('');
       }
     } catch (error) {
       console.error('Error adding item to cart:', error);
