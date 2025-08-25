@@ -1,3 +1,33 @@
+export type EnrichedOrder = Order & {
+  productDetails: Array<{
+    productId: string;
+    productName: string;
+    productImage: string;
+    barcode: string;
+    price: number;
+    discount: number;
+    finalPrice: number;
+  }>;
+  total: number;
+  itemsCount: number;
+};
+
+export type CustomerData = {
+  name: string;
+  phone: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate: string;
+  favoriteProducts: Array<{
+    productId: string;
+    productName: string;
+    productImage: string;
+    quantity: number;
+    totalSpent: number;
+  }>;
+  orders: Order[];
+};
+
 export type Notes = {
   id: string;
   title: string;
