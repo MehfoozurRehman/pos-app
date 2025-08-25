@@ -1,4 +1,4 @@
-import { Barcode, Edit, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Barcode, Edit, Image as ImageIcon, Package, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@renderer/components/ui/card';
 import { useEffect, useState } from 'react';
 
@@ -19,9 +19,10 @@ type InventoryCardProps = {
   item: EnrichedInventory;
   onEdit: (item: Inventory) => void;
   onDelete: (item: Inventory) => void;
+  inventoryMode: 'barcode' | 'quantity';
 };
 
-export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
+export function InventoryCard({ item, onEdit, onDelete, inventoryMode }: InventoryCardProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -72,10 +73,18 @@ export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
         </div>
         <div className="p-4 space-y-4">
           <h3 className="font-semibold text-sm line-clamp-2 min-h-[2.5rem] capitalize -mb-1">{item.productName}</h3>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Barcode className="w-3 h-3" />
-            <span className="font-mono">{item.barcode}</span>
-          </div>
+          {inventoryMode === 'barcode' && item.barcode && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Barcode className="w-3 h-3" />
+              <span className="font-mono">{item.barcode}</span>
+            </div>
+          )}
+          {inventoryMode === 'quantity' && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Package className="w-3 h-3" />
+              <span className="font-medium">Qty: {item.quantity || 0}</span>
+            </div>
+          )}
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Cost:</span>

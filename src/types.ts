@@ -48,15 +48,17 @@ export type Product = {
 export type Inventory = {
   id: string;
   productId: string;
-  barcode: string;
+  barcode?: string;
   actualPrice: number;
   sellingPrice: number;
+  quantity?: number;
   createdAt: string;
 };
 
 export type OrderItem = {
   productId: string;
-  barcode: string;
+  barcode?: string;
+  inventoryId?: string;
   discount?: number;
   quantity: number;
 };
@@ -85,6 +87,7 @@ export type Shop = {
   email?: string;
   description?: string;
   theme?: 'light' | 'dark' | 'system';
+  inventoryMode?: 'barcode' | 'quantity';
   createdAt?: string;
 };
 

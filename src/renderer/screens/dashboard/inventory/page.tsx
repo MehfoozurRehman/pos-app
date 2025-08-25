@@ -10,6 +10,7 @@ import { logger } from '@renderer/utils/logger';
 type InventoryFormData = {
   productId: string;
   barcode: string;
+  quantity: number;
   actualPrice: number;
   sellingPrice: number;
 };
@@ -17,6 +18,7 @@ type InventoryFormData = {
 export default function InventoryPage() {
   const { data: inventory, error } = useSWR('inventory', () => window.api.db.get('inventory'));
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
+  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<string>('All');
@@ -48,7 +50,7 @@ export default function InventoryPage() {
     if (!enrichedInventory) return [];
 
     return enrichedInventory.filter((item) => {
-      const matchesSearch = item.barcode.toLowerCase().includes(searchQuery.toLowerCase()) || item.productName.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (item.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) || false) || item.productName.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesProduct = selectedProduct === 'All' || item.productId === selectedProduct;
 
@@ -83,7 +85,8 @@ export default function InventoryPage() {
     try {
       setIsSubmitting(true);
 
-      if (inventory) {
+
+      if (inventory && shop?.inventoryMode === 'barcode') {
         const existingItem = inventory.find((item) => item.barcode === data.barcode && item.id !== editingInventory?.id);
         if (existingItem) {
           toast.error('Barcode already exists in inventory');
@@ -130,7 +133,15 @@ export default function InventoryPage() {
   return (
     <div className="p-6 space-y-6">
       <InventoryHeader onCreateInventory={handleCreateInventory} />
-      <InventoryForm isOpen={isPopupOpen} onOpenChange={setIsPopupOpen} editingInventory={editingInventory} onSubmit={handleSubmit} isSubmitting={isSubmitting} productOptions={productOptions} />
+      <InventoryForm 
+        isOpen={isPopupOpen} 
+        onOpenChange={setIsPopupOpen} 
+        editingInventory={editingInventory} 
+        onSubmit={handleSubmit} 
+        isSubmitting={isSubmitting} 
+        productOptions={productOptions}
+        inventoryMode={shop?.inventoryMode || 'barcode'}
+      />
       <InventoryFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedProduct={selectedProduct} onProductChange={setSelectedProduct} productOptions={productOptions} />
       <InventoryGrid
         searchQuery={searchQuery}
@@ -139,6 +150,7 @@ export default function InventoryPage() {
         filteredInventory={filteredInventory}
         selectedProduct={selectedProduct}
         onCreateInventory={handleCreateInventory}
+        inventoryMode={shop?.inventoryMode || 'barcode'}
       />
     </div>
   );

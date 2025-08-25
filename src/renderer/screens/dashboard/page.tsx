@@ -25,20 +25,22 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const cartVisible = useAtomValue(cartVisibilityAtom);
   const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
+  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
 
   const width = isMobile ? '100%' : cartVisible ? 'calc(100% - 400px)' : '100%';
   const isAnyPanelInvisible = !cartVisible || !orderQueueVisible;
+  const inventoryMode = shop?.inventoryMode || 'barcode';
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <GlobalBarcodeScanner />
+      <GlobalBarcodeScanner inventoryMode={inventoryMode} />
       <motion.div initial={{ paddingRight: 0 }} animate={{ paddingRight: isAnyPanelInvisible ? '50px' : '0px' }} className="flex flex-col gap-4 flex-1 overflow-hidden">
         <ShopHeader />
         <div className="flex gap-4 flex-1">
           <motion.div initial={{ width }} animate={{ width }} className="flex flex-col h-full border-r p-4 gap-4">
             <DashboardStats />
             <OrderPanel />
-            <ProductsPanel />
+            <ProductsPanel inventoryMode={inventoryMode} />
           </motion.div>
           <OrderDetails />
         </div>
@@ -47,7 +49,7 @@ export default function Dashboard() {
   );
 }
 
-function GlobalBarcodeScanner() {
+function GlobalBarcodeScanner({ inventoryMode }: { inventoryMode: 'barcode' | 'quantity' }) {
   const [, setCart] = useAtom(cartAtom);
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
@@ -117,6 +119,11 @@ function GlobalBarcodeScanner() {
 
   const addToCartByBarcode = async (barcode: string) => {
     try {
+      if (inventoryMode === 'quantity') {
+        toast.error('Barcode scanning is not available in quantity-based inventory mode. Please add items manually from the products panel.');
+        return;
+      }
+
       if (!barcode || !barcode.trim()) {
         toast.error('Please enter a valid barcode to continue.');
         return;
@@ -334,6 +341,9 @@ function DashboardStats() {
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
+  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+
+  const inventoryMode = shop?.inventoryMode || 'barcode';
 
   const stats = useMemo(() => {
     if (!orders || !products || !inventory) {
@@ -354,11 +364,22 @@ function DashboardStats() {
 
     const totalRevenue = completedOrders.reduce((sum: number, order: Order) => {
       const orderTotal = order.items.reduce((itemSum: number, item) => {
+        let inventoryItem;
+        
+        if (inventoryMode === 'quantity') {
 
-        const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+          inventoryItem = inventory.find((inv) => inv.productId === item.productId);
+        } else {
+
+          inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+        }
         
         if (!inventoryItem) {
-          logger.warn('Inventory item not found for barcode', 'revenue-calculation', { barcode: item.barcode });
+          logger.warn('Inventory item not found', 'revenue-calculation', { 
+            productId: item.productId, 
+            barcode: item.barcode, 
+            inventoryMode 
+          });
           return itemSum;
         }
 
@@ -469,7 +490,7 @@ function DashboardStats() {
   );
 }
 
-function ProductsPanel() {
+function ProductsPanel({ inventoryMode }: { inventoryMode: 'barcode' | 'quantity' }) {
   const [parent] = useAutoAnimate();
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
@@ -539,7 +560,7 @@ function ProductsPanel() {
         ) : (
           <div ref={parent} className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} inventoryMode={inventoryMode} />
             ))}
           </div>
         )}
@@ -554,15 +575,17 @@ type EnrichedProduct = Product & {
   inStock: boolean;
 };
 
-function ProductCard({ product }: { product: EnrichedProduct }) {
+function ProductCard({ product, inventoryMode }: { product: EnrichedProduct; inventoryMode: 'barcode' | 'quantity' }) {
   const [, setCart] = useAtom(cartAtom);
 
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [barcode, setBarcode] = useState('');
+  const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const openAdd = () => {
     setBarcode('');
+    setQuantity(1);
     setShowAddDrawer(true);
   };
 
@@ -575,116 +598,177 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
         return;
       }
 
-      let found;
-
-      if (barcode.trim()) {
-
-        found = inv.find((i) => i.barcode === barcode.trim() && i.productId === product.id);
-        if (!found) {
-          toast.error(`Barcode "${barcode.trim()}" not found for ${product.name}. Please verify the barcode.`);
+      if (inventoryMode === 'quantity') {
+ 
+        const productInventory = inv.find((i) => i.productId === product.id);
+        if (!productInventory) {
+          toast.error(`No inventory found for "${product.name}".`);
           return;
         }
-      } else {
 
-        const currentCart = await new Promise<any>((resolve) => {
-          setCart((prev) => {
-            resolve(prev);
-            return prev;
-          });
-        });
-
-        const usedBarcodes = currentCart?.items?.map((item: any) => item.barcode) || [];
-        const availableItems = inv.filter((i) => 
-          i.productId === product.id && 
-          !usedBarcodes.includes(i.barcode) &&
-          i.barcode &&
-          i.sellingPrice > 0
-        );
-
-        if (availableItems.length === 0) {
-          toast.error(`No available inventory for "${product.name}". All items may already be in cart or out of stock.`);
+        if ((productInventory.quantity || 0) < quantity) {
+          toast.error(`Insufficient stock. Available: ${productInventory.quantity}, Requested: ${quantity}`);
           return;
         }
-        found = availableItems[0];
-      }
 
+        let additionSuccessful = false;
+        let updatedCart: Order | undefined;
 
-      if (!found.barcode || !found.productId || found.sellingPrice < 0) {
-        toast.error('Invalid inventory item data');
-        return;
-      }
+        setCart((prev) => {
+          const cart = prev || {
+            id: `cart-${Date.now()}`,
+            orderId: `#cart-${Date.now()}`,
+            status: 'cart',
+            customerName: '',
+            customerPhone: '',
+            items: [],
+            discount: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
 
-      let additionSuccessful = false;
-      let updatedCart: Order | undefined;
-
-      setCart((prev) => {
-
-        const cart = prev || {
-          id: `cart-${Date.now()}`,
-          orderId: `#cart-${Date.now()}`,
-          status: 'cart',
-          customerName: '',
-          customerPhone: '',
-          items: [],
-          discount: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-
-        const existingItem = cart.items.find((item) => item.barcode === found.barcode);
-        if (existingItem) {
-          toast.error(`"${product.name}" is already in your cart. You can modify quantity from the cart.`);
-          return prev;
-        }
-
-
-        updatedCart = {
-          ...cart,
-          items: [
-            ...cart.items,
-            {
-              productId: product.id,
-              barcode: found.barcode,
-              discount: 0,
-              quantity: 1,
-            },
-          ],
-          updatedAt: new Date().toISOString(),
-        };
-
-        additionSuccessful = true;
-        return updatedCart;
-      });
-
-
-      if (additionSuccessful && updatedCart) {
-        try {
-          const existingCart = await window.api.db.get('orders').then(orders => 
-            orders?.find((o: Order) => o.id === updatedCart!.id)
-          );
-          
-          if (existingCart) {
-            await window.api.db.update('orders', updatedCart.id, updatedCart);
+          const existingItem = cart.items.find((item) => item.productId === product.id);
+          if (existingItem) {
+ 
+            const newQuantity = existingItem.quantity + quantity;
+            if ((productInventory.quantity || 0) < newQuantity) {
+              toast.error(`Insufficient stock. Available: ${productInventory.quantity}, Total requested: ${newQuantity}`);
+              return prev;
+            }
+            
+            updatedCart = {
+              ...cart,
+              items: cart.items.map((item) =>
+                item.productId === product.id
+                  ? { ...item, quantity: newQuantity }
+                  : item
+              ),
+              updatedAt: new Date().toISOString(),
+            };
           } else {
-            await window.api.db.create('orders', updatedCart);
-          }
-          mutate('orders');
-        } catch (error) {
-          logger.error('Failed to save cart to database', 'cart-save', error);
-        }
-        
-        toast.success(`✓ "${product.name}" added to cart successfully!`);
-        setShowAddDrawer(false);
-        setBarcode('');
+ 
+            updatedCart = {
+              ...cart,
+              items: [
+                ...cart.items,
+                {
+                   productId: product.id,
+                   barcode: '',
+                   discount: 0,
+                   quantity: quantity,
+                 },
+               ],
+               updatedAt: new Date().toISOString(),
+             };
+           }
+
+           additionSuccessful = true;
+           return updatedCart;
+         });
+       } else {
+         let found;
+
+         if (barcode.trim()) {
+           found = inv.find((i) => i.barcode === barcode.trim() && i.productId === product.id);
+           if (!found) {
+             toast.error(`Barcode "${barcode.trim()}" not found for ${product.name}. Please verify the barcode.`);
+             return;
+           }
+         } else {
+           const currentCart = await new Promise<any>((resolve) => {
+             setCart((prev) => {
+               resolve(prev);
+               return prev;
+             });
+           });
+
+           const usedBarcodes = currentCart?.items?.map((item: any) => item.barcode) || [];
+           const availableItems = inv.filter((i) => 
+             i.productId === product.id && 
+             !usedBarcodes.includes(i.barcode) &&
+             i.barcode &&
+             i.sellingPrice > 0
+           );
+
+           if (availableItems.length === 0) {
+             toast.error(`No available inventory for "${product.name}". All items may already be in cart or out of stock.`);
+             return;
+           }
+           found = availableItems[0];
+         }
+
+         if (!found.barcode || !found.productId || found.sellingPrice < 0) {
+           toast.error('Invalid inventory item data');
+           return;
+         }
+
+         setCart((prev) => {
+           const cart = prev || {
+             id: `cart-${Date.now()}`,
+             orderId: `#cart-${Date.now()}`,
+             status: 'cart',
+             customerName: '',
+             customerPhone: '',
+             items: [],
+             discount: 0,
+             createdAt: new Date().toISOString(),
+             updatedAt: new Date().toISOString(),
+           };
+
+           const existingItem = cart.items.find((item) => item.barcode === found.barcode);
+           if (existingItem) {
+             toast.error(`"${product.name}" is already in your cart. You can modify quantity from the cart.`);
+             return prev;
+           }
+
+           const updatedCart = {
+             ...cart,
+             items: [
+               ...cart.items,
+               {
+                 productId: product.id,
+                 barcode: found.barcode,
+                 discount: 0,
+                 quantity: 1,
+               },
+             ],
+             updatedAt: new Date().toISOString(),
+           };
+
+  
+           (async () => {
+             try {
+               const existingCart = await window.api.db.get('orders').then(orders => 
+                 orders?.find((o: Order) => o.id === updatedCart.id)
+               );
+               
+               if (existingCart) {
+                 await window.api.db.update('orders', updatedCart.id, updatedCart);
+               } else {
+                 await window.api.db.create('orders', updatedCart);
+               }
+               mutate('orders');
+             } catch (error) {
+               logger.error('Failed to save cart to database', 'cart-save', error);
+             }
+           })();
+
+           const successMessage = `✓ "${product.name}" added to cart successfully!`;
+           toast.success(successMessage);
+           setShowAddDrawer(false);
+           setBarcode('');
+           setQuantity(1);
+           
+           return updatedCart;
+         });
+       }
+      } catch (error) {
+        logger.error('Failed to add item to cart', 'cart-add-item', { productId: product.id, error });
+        toast.error('Failed to add item to cart. Please try again.');
+      } finally {
+        setIsAddingToCart(false);
       }
-    } catch (error) {
-      logger.error('Failed to add item to cart', 'cart-add-item', { productId: product.id, error });
-      toast.error('Failed to add item to cart. Please try again.');
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
+    };
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
@@ -751,15 +835,34 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
             <DrawerTitle>Add {product.name} to Cart</DrawerTitle>
           </DrawerHeader>
           <div className="p-4 space-y-4">
-            <div>
-              <label className="text-sm font-medium">Barcode (optional)</label>
-              <Input value={barcode} onChange={(e) => setBarcode(e.target.value)} placeholder="Scan or enter specific barcode" />
-              <p className="text-xs text-muted-foreground mt-1">Leave empty to automatically select an available item from stock</p>
-            </div>
+            {inventoryMode === 'barcode' ? (
+              <div>
+                <label className="text-sm font-medium">Barcode (optional)</label>
+                <Input value={barcode} onChange={(e) => setBarcode(e.target.value)} placeholder="Scan or enter specific barcode" />
+                <p className="text-xs text-muted-foreground mt-1">Leave empty to automatically select an available item from stock</p>
+              </div>
+            ) : (
+              <div>
+                <label className="text-sm font-medium">Quantity</label>
+                <Input 
+                  type="number" 
+                  min="1" 
+                  max={product.stockCount} 
+                  value={quantity} 
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} 
+                  placeholder="Enter quantity" 
+                />
+                <p className="text-xs text-muted-foreground mt-1">Available stock: {product.stockCount}</p>
+              </div>
+            )}
 
             <div className="bg-muted/50 p-3 rounded-lg">
               <p className="text-sm font-medium mb-1">Available Stock: {product.stockCount} items</p>
-              <p className="text-xs text-muted-foreground">Each barcode represents one unique item. To add multiple items, add them individually.</p>
+              {inventoryMode === 'barcode' ? (
+                <p className="text-xs text-muted-foreground">Each barcode represents one unique item. To add multiple items, add them individually.</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">You can add multiple quantities of this product at once.</p>
+              )}
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -915,6 +1018,9 @@ function OrderDetails() {
   const isMobile = useIsMobile();
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
+  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+
+  const inventoryMode = shop?.inventoryMode || 'barcode';
 
   useEffect(() => {
     if (isMobile) {
@@ -929,10 +1035,22 @@ function OrderDetails() {
 
     return cart.items.map((item, index) => {
       const product = products.find((p) => p.id === item.productId);
-      const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+      let inventoryItem;
+      
+      if (inventoryMode === 'quantity') {
+        
+        inventoryItem = inventory.find((inv) => inv.productId === item.productId);
+      } else {
+        
+        inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+      }
 
       if (!inventoryItem) {
-        logger.warn('Inventory item not found for barcode in cart total calculation', 'cart-total', { barcode: item.barcode });
+        logger.warn('Inventory item not found in cart total calculation', 'cart-total', { 
+          productId: item.productId, 
+          barcode: item.barcode, 
+          inventoryMode 
+        });
       }
 
       const unitPrice = inventoryItem?.sellingPrice || 0;
@@ -1172,7 +1290,7 @@ function OrderDetails() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleRemoveItem(item.productId, item.barcode)}
+                              onClick={() => handleRemoveItem(item.productId, item.barcode || '')}
                               className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                               title="Remove item"
                             >

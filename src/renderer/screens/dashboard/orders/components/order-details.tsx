@@ -118,7 +118,7 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
           <ScrollArea className="h-[400px]">
             <div className="space-y-3">
               {order.productDetails.map((item, index) => (
-                <ProductItem key={`${item.productId}-${index}`} item={item} />
+                <ProductItem key={`${item.productId}-${index}`} item={item} orderId={order.id} />
               ))}
             </div>
 
@@ -148,7 +148,7 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
   );
 }
 
-function ProductItem({ item }: { item: EnrichedOrder['productDetails'][0] }) {
+function ProductItem({ item, orderId }: { item: EnrichedOrder['productDetails'][0]; orderId?: string }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -166,7 +166,7 @@ function ProductItem({ item }: { item: EnrichedOrder['productDetails'][0] }) {
           setImageUrl(item.productImage);
         }
       } catch (error) {
-        logger.error('Failed to load product image in order details', 'order-product-image-load', { orderId: order.id, productId: item.productId, imagePath: item.productImage, error });
+        logger.error('Failed to load product image in order details', 'order-product-image-load', { orderId, productId: item.productId, imagePath: item.productImage, error });
         setImageUrl(null);
       }
     }

@@ -38,6 +38,9 @@ export default function Analytics() {
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
+  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+
+  const inventoryMode = shop?.inventoryMode || 'barcode';
 
   const analyticsData = useMemo((): AnalyticsData => {
     if (!orders || !products || !inventory) {
@@ -59,7 +62,16 @@ export default function Analytics() {
 
     const enrichedOrders = orders.map((order) => {
       const total = order.items.reduce((sum, item) => {
-        const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+        let inventoryItem;
+        
+        if (inventoryMode === 'quantity') {
+
+          inventoryItem = inventory.find((inv) => inv.productId === item.productId);
+        } else {
+
+          inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+        }
+        
         if (inventoryItem) {
           const itemPrice = inventoryItem.sellingPrice;
           const discount = item.discount || 0;
@@ -95,13 +107,24 @@ export default function Analytics() {
     const pendingOrders = statusCounts.pending || 0;
     const draftOrders = statusCounts.draft || 0;
 
-    const lowStockItems = inventory.filter((item) => item.actualPrice > item.sellingPrice * 0.8).length;
+    const lowStockItems = inventoryMode === 'quantity'
+      ? inventory.filter((item) => (item.quantity || 0) <= 5).length
+        : inventory.filter((item) => item.actualPrice > item.sellingPrice * 0.8).length;
 
     const productSales = new Map<string, { totalSold: number; revenue: number }>();
 
     orders.forEach((order) => {
       order.items.forEach((item) => {
-        const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+        let inventoryItem;
+        
+        if (inventoryMode === 'quantity') {
+
+          inventoryItem = inventory.find((inv) => inv.productId === item.productId);
+        } else {
+
+          inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+        }
+        
         if (inventoryItem) {
           const current = productSales.get(inventoryItem.productId) || { totalSold: 0, revenue: 0 };
           const itemPrice = inventoryItem.sellingPrice;

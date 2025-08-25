@@ -19,9 +19,10 @@ type InventoryGridProps = {
   onEdit: (item: Inventory) => void;
   onDelete: (item: Inventory) => void;
   onCreateInventory: () => void;
+  inventoryMode: 'barcode' | 'quantity';
 };
 
-export function InventoryGrid({ filteredInventory, searchQuery, selectedProduct, onEdit, onDelete, onCreateInventory }: InventoryGridProps) {
+export function InventoryGrid({ filteredInventory, searchQuery, selectedProduct, onEdit, onDelete, onCreateInventory, inventoryMode }: InventoryGridProps) {
   const [parent] = useAutoAnimate();
 
   return (
@@ -43,7 +44,7 @@ export function InventoryGrid({ filteredInventory, searchQuery, selectedProduct,
           </Card>
         </div>
       ) : (
-        filteredInventory.map((item) => <InventoryCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />)
+        filteredInventory.map((item) => <InventoryCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} inventoryMode={inventoryMode} />)
       )}
     </div>
   );

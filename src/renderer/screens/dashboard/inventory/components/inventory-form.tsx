@@ -15,6 +15,7 @@ import { useIsMobile } from '@renderer/hooks/use-mobile';
 type InventoryFormData = {
   productId: string;
   barcode: string;
+  quantity: number;
   actualPrice: number;
   sellingPrice: number;
 };
@@ -31,16 +32,18 @@ type InventoryFormProps = {
   onSubmit: (data: InventoryFormData) => Promise<void>;
   isSubmitting: boolean;
   productOptions: ProductOption[];
+  inventoryMode: 'barcode' | 'quantity';
 };
 
 const initialFormData: InventoryFormData = {
   productId: '',
   barcode: '',
+  quantity: 0,
   actualPrice: 0,
   sellingPrice: 0,
 };
 
-export function InventoryForm({ isOpen, onOpenChange, editingInventory, onSubmit, isSubmitting, productOptions }: InventoryFormProps) {
+export function InventoryForm({ isOpen, onOpenChange, editingInventory, onSubmit, isSubmitting, productOptions, inventoryMode }: InventoryFormProps) {
   const [formData, setFormData] = useState<InventoryFormData>(initialFormData);
   const [barcodeInput, setBarcodeInput] = useState('');
   const isMobile = useIsMobile();
@@ -58,11 +61,12 @@ export function InventoryForm({ isOpen, onOpenChange, editingInventory, onSubmit
     if (editingInventory) {
       setFormData({
         productId: editingInventory.productId,
-        barcode: editingInventory.barcode,
+        barcode: editingInventory.barcode || '',
+        quantity: editingInventory.quantity || 0,
         actualPrice: editingInventory.actualPrice,
         sellingPrice: editingInventory.sellingPrice,
       });
-      setBarcodeInput(editingInventory.barcode);
+      setBarcodeInput(editingInventory.barcode || '');
     } else {
       setFormData(initialFormData);
       setBarcodeInput('');
@@ -79,8 +83,13 @@ export function InventoryForm({ isOpen, onOpenChange, editingInventory, onSubmit
       return;
     }
 
-    if (!formData.barcode.trim()) {
+    if (inventoryMode === 'barcode' && !formData.barcode.trim()) {
       toast.error('Barcode is required');
+      return;
+    }
+
+    if (inventoryMode === 'quantity' && formData.quantity <= 0) {
+      toast.error('Quantity must be greater than 0');
       return;
     }
 
@@ -135,7 +144,32 @@ export function InventoryForm({ isOpen, onOpenChange, editingInventory, onSubmit
                 </Select>
               </div>
 
-              <BarcodeInput value={barcodeInput} onChange={handleBarcodeChange} disabled={isSubmitting} label="Barcode" required placeholder="Enter or scan barcode" />
+              {inventoryMode === 'barcode' && (
+                <BarcodeInput value={barcodeInput} onChange={handleBarcodeChange} disabled={isSubmitting} label="Barcode" required placeholder="Enter or scan barcode" />
+              )}
+
+              {inventoryMode === 'quantity' && (
+                <div className="space-y-2">
+                  <Label htmlFor="quantity" className="flex items-center gap-2">
+                    <Package className="w-4 h-4" />
+                    Quantity *
+                  </Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    min="0"
+                    value={formData.quantity || ''}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        quantity: parseInt(e.target.value) || 0,
+                      }))
+                    }
+                    placeholder="0"
+                    disabled={isSubmitting}
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">

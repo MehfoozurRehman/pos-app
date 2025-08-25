@@ -25,6 +25,9 @@ export default function OrdersPage() {
   const { data: orders, error } = useSWR('orders', () => window.api.db.get('orders'));
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
+  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+
+  const inventoryMode = shop?.inventoryMode || 'barcode';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -65,7 +68,10 @@ export default function OrdersPage() {
         ...order,
         total,
         itemsCount: order.items.length,
-        productDetails,
+        productDetails: productDetails.map(pd => ({
+          ...pd,
+          barcode: pd.barcode || ''
+        })),
       };
     });
   }, [orders, products, inventory]);
@@ -134,28 +140,82 @@ export default function OrdersPage() {
       if (!inventory) return;
 
       if (newStatus === 'completed' && oldStatus !== 'completed') {
-        for (const item of order.items) {
-          const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
-          if (inventoryItem) {
-            await window.api.db.delete('inventory', inventoryItem.id);
+        if (inventoryMode === 'quantity') {
+
+          for (const item of order.items) {
+            const inventoryItems = inventory.filter((inv) => inv.productId === item.productId);
+            let remainingToDeduct = 1;
+            
+            for (const inventoryItem of inventoryItems) {
+              if (remainingToDeduct <= 0) break;
+              
+              const currentQuantity = inventoryItem.quantity || 1;
+              const deductAmount = Math.min(currentQuantity, remainingToDeduct);
+              const newQuantity = currentQuantity - deductAmount;
+              
+              if (newQuantity <= 0) {
+                await window.api.db.delete('inventory', inventoryItem.id);
+              } else {
+                await window.api.db.update('inventory', inventoryItem.id, {
+                  ...inventoryItem,
+                  quantity: newQuantity
+                });
+              }
+              
+              remainingToDeduct -= deductAmount;
+            }
+          }
+        } else {
+          for (const item of order.items) {
+            const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+            if (inventoryItem) {
+              await window.api.db.delete('inventory', inventoryItem.id);
+            }
           }
         }
       }
 
       else if ((newStatus === 'cancelled' && oldStatus === 'completed') || (oldStatus === 'completed' && newStatus !== 'completed')) {
-        for (const item of order.items) {
-          const existingItem = inventory.find((inv) => inv.barcode === item.barcode);
-          if (!existingItem) {
+        if (inventoryMode === 'quantity') {
+          for (const item of order.items) {
+            const existingItems = inventory.filter((inv) => inv.productId === item.productId);
             const productDetails = order.productDetails.find((pd) => pd.productId === item.productId);
-            if (productDetails) {
+            
+            if (existingItems.length > 0 && productDetails) {
+  
+              const firstItem = existingItems[0];
+              const currentQuantity = firstItem.quantity || 1;
+              await window.api.db.update('inventory', firstItem.id, {
+                ...firstItem,
+                quantity: currentQuantity + 1
+              });
+            } else if (productDetails) {
+  
               const inventoryData = {
                 productId: item.productId,
-                barcode: item.barcode,
+                quantity: 1,
                 actualPrice: productDetails.price,
                 sellingPrice: productDetails.price,
                 createdAt: new Date().toISOString(),
               };
               await window.api.db.create('inventory', inventoryData);
+            }
+          }
+        } else {
+          for (const item of order.items) {
+            const existingItem = inventory.find((inv) => inv.barcode === item.barcode);
+            if (!existingItem) {
+              const productDetails = order.productDetails.find((pd) => pd.productId === item.productId);
+              if (productDetails) {
+                const inventoryData = {
+                  productId: item.productId,
+                  barcode: item.barcode,
+                  actualPrice: productDetails.price,
+                  sellingPrice: productDetails.price,
+                  createdAt: new Date().toISOString(),
+                };
+                await window.api.db.create('inventory', inventoryData);
+              }
             }
           }
         }
