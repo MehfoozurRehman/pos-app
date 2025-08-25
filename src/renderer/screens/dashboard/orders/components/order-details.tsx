@@ -1,5 +1,5 @@
+import { Barcode, DollarSign, Image as ImageIcon, Package, Phone, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card';
-import { Phone, Package, DollarSign, Calendar, User, Image as ImageIcon, Barcode } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@renderer/components/ui/badge';
