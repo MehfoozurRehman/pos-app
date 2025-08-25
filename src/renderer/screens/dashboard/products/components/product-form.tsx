@@ -1,5 +1,5 @@
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@renderer/components/ui/drawer';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
@@ -39,7 +39,7 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
   const [categoryInput, setCategoryInput] = useState('');
   const isMobile = useIsMobile();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (editingProduct) {
       setFormData({
         name: editingProduct.name,
