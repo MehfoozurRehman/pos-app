@@ -1,5 +1,6 @@
-import { Button } from '@renderer/components/ui/button';
 import { Package, Plus } from 'lucide-react';
+
+import { Button } from '@renderer/components/ui/button';
 
 interface InventoryHeaderProps {
   onCreateInventory: () => void;
