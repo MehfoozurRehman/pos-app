@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { Inventory, Product } from 'src/types';
 import { InventoryFilters, InventoryForm, InventoryGrid, InventoryHeader } from './components';
 import { useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
+import { Inventory } from 'src/types';
 import { toast } from 'sonner';
 
 interface InventoryFormData {
