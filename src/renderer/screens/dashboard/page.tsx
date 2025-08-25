@@ -172,9 +172,12 @@ function GlobalBarcodeScanner() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && barcodeBuffer.trim()) {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      addToCartByBarcode(barcodeBuffer.trim());
+      const trimmedBarcode = barcodeBuffer.trim();
+      if (trimmedBarcode && trimmedBarcode.length >= 3) {
+        addToCartByBarcode(trimmedBarcode);
+      }
       setBarcodeBuffer('');
     }
   };
@@ -182,11 +185,15 @@ function GlobalBarcodeScanner() {
   useEffect(() => {
     if (barcodeBuffer.length > 0) {
       const timer = setTimeout(() => {
-        if (barcodeBuffer.trim()) {
-          addToCartByBarcode(barcodeBuffer.trim());
+        const trimmedBarcode = barcodeBuffer.trim();
+        if (trimmedBarcode && trimmedBarcode.length >= 3) {
+          addToCartByBarcode(trimmedBarcode);
+          setBarcodeBuffer('');
+        } else if (trimmedBarcode) {
+          // Clear invalid short barcodes without showing error
           setBarcodeBuffer('');
         }
-      }, 50);
+      }, 300); // Increased timeout to 300ms
 
       return () => clearTimeout(timer);
     }
