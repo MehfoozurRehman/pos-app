@@ -26,7 +26,6 @@ export const createPayment = mutation({
   },
 });
 
-// Simple analytics: count payments per shop
 export const paymentsCountPerShop = query({
   handler: async (ctx) => {
     const payments = await ctx.db.query('payments').collect();

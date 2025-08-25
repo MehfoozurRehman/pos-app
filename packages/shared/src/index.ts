@@ -1,4 +1,3 @@
-// Common types for POS system
 export interface Product {
   id: string;
   name: string;
@@ -40,7 +39,6 @@ export interface TransactionItem {
 export type PaymentMethod = 'cash' | 'card' | 'digital';
 export type TransactionStatus = 'pending' | 'completed' | 'cancelled' | 'refunded';
 
-// Utility functions
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

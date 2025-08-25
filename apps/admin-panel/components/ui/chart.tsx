@@ -12,7 +12,6 @@ import type { NameType, ValueType } from 'recharts/types/component/DefaultToolti
 
 import { cn } from '@/lib/utils';
 
-// Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: '', dark: '.dark' } as const;
 
 export type ChartConfig = Record<
@@ -250,7 +249,6 @@ function ChartLegendContent({
   );
 }
 
-// Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string) {
   if (typeof payload !== 'object' || payload === null) {
     return undefined;

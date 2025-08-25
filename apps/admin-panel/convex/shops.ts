@@ -31,7 +31,7 @@ export const createShop = mutation({
   handler: async (ctx, args) => {
     const id = await ctx.db.insert('shops', {
       ...args,
-      logo: args.logo ?? '', // Ensure logo is always a string
+      logo: args.logo ?? '',
     });
     return id;
   },
