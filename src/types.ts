@@ -58,6 +58,7 @@ export type OrderItem = {
   productId: string;
   barcode: string;
   discount?: number;
+  quantity: number;
 };
 
 export type Order = {
@@ -69,6 +70,7 @@ export type Order = {
   items: OrderItem[];
   discount?: number;
   createdAt: string;
+  updatedAt?: string;
 };
 
 export type Shop = {
