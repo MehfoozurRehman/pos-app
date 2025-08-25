@@ -1,6 +1,7 @@
+import { Search, SortAsc } from 'lucide-react';
+
 import { Button } from '@renderer/components/ui/button';
 import { Input } from '@renderer/components/ui/input';
-import { Search, SortAsc } from 'lucide-react';
 
 interface CustomerFiltersProps {
   searchQuery: string;
