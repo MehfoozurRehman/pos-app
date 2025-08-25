@@ -17,7 +17,7 @@ export default function Layout() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <Header />
-        <div className="flex w-full flex-col flex-1 min-h-0">
+        <div className="flex w-full flex-col flex-1 min-h-0 max-h-[calc(100vh-68px)] overflow-y-auto style-scrollbar">
           <Outlet />
         </div>
       </SidebarInset>
