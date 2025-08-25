@@ -1,21 +1,7 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
 import { DollarSign, ShoppingBag, TrendingUp, Users } from 'lucide-react';
 
-interface CustomerData {
-  name: string;
-  phone: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  favoriteProducts: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    quantity: number;
-    totalSpent: number;
-  }>;
-  orders: any[];
-}
+import { CustomerData } from 'src/types';
 
 interface CustomerStatsProps {
   customers: CustomerData[];
