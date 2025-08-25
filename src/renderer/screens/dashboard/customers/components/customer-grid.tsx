@@ -1,24 +1,9 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
+import { CustomerData, Order } from 'src/types';
 
 import { CustomerCard } from './customer-card';
 import { Users } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-
-interface CustomerData {
-  name: string;
-  phone: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  favoriteProducts: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    quantity: number;
-    totalSpent: number;
-  }>;
-  orders: any[];
-}
 
 interface CustomerGridProps {
   customers: CustomerData[];
