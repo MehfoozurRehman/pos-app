@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 import type { IpcRenderer } from 'electron';
 import type { DBSchema, Log } from 'src/types';
 
