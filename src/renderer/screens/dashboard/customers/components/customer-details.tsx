@@ -1,5 +1,5 @@
+import { Calendar, DollarSign, Image as ImageIcon, Package, Phone, ShoppingBag, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card';
-import { Phone, ShoppingBag, DollarSign, Calendar, Package, Image as ImageIcon, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@renderer/components/ui/badge';
@@ -27,18 +27,11 @@ interface CustomerData {
   orders: any[];
 }
 
-interface Product {
-  id: string;
-  name: string;
-  picture: string;
-}
-
 interface CustomerDetailsProps {
   customer: CustomerData | null;
-  products: Product[];
 }
 
-export function CustomerDetails({ customer, products }: CustomerDetailsProps) {
+export function CustomerDetails({ customer }: CustomerDetailsProps) {
   if (!customer) {
     return (
       <Card className="h-fit">
