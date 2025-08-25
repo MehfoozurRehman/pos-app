@@ -12,7 +12,6 @@ export function Header() {
   const handleGetChanges = useCallback(async () => {
     try {
       const changes = await window.api.db.changesSince(new Date(0).toISOString());
-      console.log('db changes', changes);
       toast.success(`Found ${Array.isArray(changes) ? changes.length : 0} change(s). See console for details.`);
     } catch (err) {
       console.error(err);
