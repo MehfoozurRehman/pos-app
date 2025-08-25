@@ -6,6 +6,7 @@ import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
 import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { Product } from 'src/types';
+import dayjs from 'dayjs';
 
 interface ProductCardProps {
   product: Product;
@@ -66,6 +67,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
             )}
           </div>
         )}
+        {product.createdAt && <p className="mt-2 text-xs text-muted-foreground text-right">{dayjs(product.createdAt).format('DD MMM YYYY')}</p>}
       </CardContent>
     </Card>
   );
