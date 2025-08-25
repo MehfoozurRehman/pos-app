@@ -19,7 +19,7 @@ export default function Products() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -43,12 +43,12 @@ export default function Products() {
 
   const handleCreateProduct = () => {
     setEditingProduct(null);
-    setIsCreateOpen(true);
+    setIsPopupOpen(true);
   };
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
-    setIsCreateOpen(true);
+    setIsPopupOpen(true);
   };
 
   const handleDeleteProduct = async (product: Product) => {
@@ -93,7 +93,7 @@ export default function Products() {
 
       toast.success('Product successfully saved');
 
-      setIsCreateOpen(false);
+      setIsPopupOpen(false);
     } catch (error) {
       console.error('Failed to save product:', error);
       toast.error('Failed to save product. Please try again.');
@@ -117,7 +117,7 @@ export default function Products() {
   return (
     <div className="p-6 space-y-6">
       <ProductsHeader onCreateProduct={handleCreateProduct} />
-      <ProductForm isOpen={isCreateOpen} onOpenChange={setIsCreateOpen} editingProduct={editingProduct} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+      <ProductForm isOpen={isPopupOpen} onOpenChange={setIsPopupOpen} editingProduct={editingProduct} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       <ProductFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} categories={categories} />
       <ProductsGrid
         searchQuery={searchQuery}
