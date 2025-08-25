@@ -50,6 +50,10 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
     } else {
       setFormData(initialFormData);
     }
+
+    return () => {
+      setFormData(initialFormData);
+    };
   }, [editingProduct]);
 
   const handleSubmit = async (e: React.FormEvent) => {
