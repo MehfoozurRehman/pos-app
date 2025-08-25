@@ -18,9 +18,10 @@ export default function Products() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const categories = useMemo(() => {
     if (!products) return [];
@@ -59,7 +60,10 @@ export default function Products() {
       }
 
       await window.api.db.delete('products', product.id);
-      mutate('products');
+
+      await mutate('products');
+
+      toast.success('Product deleted successfully');
     } catch (error) {
       console.error('Failed to delete product:', error);
       toast.error('Failed to delete product. Please try again.');
@@ -85,7 +89,10 @@ export default function Products() {
         await window.api.db.create('products', productData as any);
       }
 
-      mutate('products');
+      await mutate('products');
+
+      toast.success('Product successfully saved');
+
       setIsCreateOpen(false);
     } catch (error) {
       console.error('Failed to save product:', error);
@@ -113,11 +120,11 @@ export default function Products() {
       <ProductForm isOpen={isCreateOpen} onOpenChange={setIsCreateOpen} editingProduct={editingProduct} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       <ProductFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} categories={categories} />
       <ProductsGrid
-        filteredProducts={filteredProducts}
         searchQuery={searchQuery}
-        selectedCategory={selectedCategory}
         onEdit={handleEditProduct}
         onDelete={handleDeleteProduct}
+        filteredProducts={filteredProducts}
+        selectedCategory={selectedCategory}
         onCreateProduct={handleCreateProduct}
       />
     </div>
