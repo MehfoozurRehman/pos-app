@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/u
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@renderer/components/ui/badge';
+import { CustomerData } from 'src/types';
 import { ImageWithFallback } from '@renderer/components/image-fallback';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Separator } from '@renderer/components/ui/separator';
@@ -10,22 +11,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
-
-interface CustomerData {
-  name: string;
-  phone: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  favoriteProducts: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    quantity: number;
-    totalSpent: number;
-  }>;
-  orders: any[];
-}
 
 interface CustomerDetailsProps {
   customer: CustomerData | null;
