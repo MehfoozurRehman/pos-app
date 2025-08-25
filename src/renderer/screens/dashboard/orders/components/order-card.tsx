@@ -58,20 +58,13 @@ export function OrderCard({ order, onClick, isSelected, onUpdateStatus, onDelete
   };
 
   return (
-    <Card 
-      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-        isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'
-      }`}
-      onClick={onClick}
-    >
+    <Card className={`cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'}`} onClick={onClick}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-lg">#{order.orderId}</h3>
-              <Badge className={getStatusColor(order.status)}>
-                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-              </Badge>
+              <Badge className={getStatusColor(order.status)}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</Badge>
             </div>
             <div className="text-sm text-muted-foreground mb-1">
               <strong>{order.customerName}</strong>
@@ -88,19 +81,10 @@ export function OrderCard({ order, onClick, isSelected, onUpdateStatus, onDelete
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={(e) => handleStatusChange(e, 'pending')}>
-                Mark as Pending
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => handleStatusChange(e, 'completed')}>
-                Mark as Completed
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => handleStatusChange(e, 'cancelled')}>
-                Mark as Cancelled
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={handleDelete}
-                className="text-red-600 focus:text-red-600"
-              >
+              <DropdownMenuItem onClick={(e) => handleStatusChange(e, 'pending')}>Mark as Pending</DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => handleStatusChange(e, 'completed')}>Mark as Completed</DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => handleStatusChange(e, 'cancelled')}>Mark as Cancelled</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Order
               </DropdownMenuItem>
@@ -128,15 +112,11 @@ export function OrderCard({ order, onClick, isSelected, onUpdateStatus, onDelete
               <Calendar className="w-3 h-3" />
               <span>Date</span>
             </div>
-            <div className="font-semibold text-xs">
-              {dayjs(order.createdAt).format('MMM D')}
-            </div>
+            <div className="font-semibold text-xs">{dayjs(order.createdAt).format('MMM D')}</div>
           </div>
         </div>
 
-        <div className="text-xs text-muted-foreground">
-          Created {dayjs(order.createdAt).fromNow()}
-        </div>
+        <div className="text-xs text-muted-foreground">Created {dayjs(order.createdAt).fromNow()}</div>
       </CardContent>
     </Card>
   );

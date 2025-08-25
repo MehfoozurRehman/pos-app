@@ -46,9 +46,7 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
         <CardContent className="p-12 text-center">
           <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Select an Order</h3>
-          <p className="text-muted-foreground">
-            Click on an order to view its detailed information and manage its status
-          </p>
+          <p className="text-muted-foreground">Click on an order to view its detailed information and manage its status</p>
         </CardContent>
       </Card>
     );
@@ -70,7 +68,7 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
   };
 
   const subtotal = order.productDetails.reduce((sum, item) => sum + item.finalPrice, 0);
-  const orderDiscount = order.discount ? (subtotal * order.discount / 100) : 0;
+  const orderDiscount = order.discount ? (subtotal * order.discount) / 100 : 0;
   const finalTotal = subtotal - orderDiscount;
 
   return (
@@ -85,12 +83,8 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
         <CardContent className="space-y-4">
           <div className="text-center pb-4">
             <h2 className="text-xl font-bold mb-2">#{order.orderId}</h2>
-            <Badge className={`${getStatusColor(order.status)} mb-2`}>
-              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-            </Badge>
-            <div className="text-sm text-muted-foreground">
-              Created {dayjs(order.createdAt).format('MMM D, YYYY [at] h:mm A')}
-            </div>
+            <Badge className={`${getStatusColor(order.status)} mb-2`}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</Badge>
+            <div className="text-sm text-muted-foreground">Created {dayjs(order.createdAt).format('MMM D, YYYY [at] h:mm A')}</div>
           </div>
 
           <Separator />
@@ -126,21 +120,10 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
           </div>
 
           <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => onUpdateStatus(order.id, 'pending')}
-              disabled={order.status === 'pending'}
-              className="flex-1"
-            >
+            <Button size="sm" variant="outline" onClick={() => onUpdateStatus(order.id, 'pending')} disabled={order.status === 'pending'} className="flex-1">
               Mark Pending
             </Button>
-            <Button 
-              size="sm" 
-              onClick={() => onUpdateStatus(order.id, 'completed')}
-              disabled={order.status === 'completed'}
-              className="flex-1"
-            >
+            <Button size="sm" onClick={() => onUpdateStatus(order.id, 'completed')} disabled={order.status === 'completed'} className="flex-1">
               Complete
             </Button>
           </div>
@@ -158,9 +141,9 @@ export function OrderDetails({ order, onUpdateStatus }: OrderDetailsProps) {
                 <ProductItem key={`${item.productId}-${index}`} item={item} />
               ))}
             </div>
-            
+
             <Separator className="my-4" />
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
@@ -215,12 +198,7 @@ function ProductItem({ item }: { item: EnrichedOrder['productDetails'][0] }) {
     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
       <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
         {imageUrl ? (
-          <ImageWithFallback
-            src={imageUrl}
-            alt={item.productName}
-            className="w-full h-full object-cover"
-            fallback={<ImageIcon className="w-5 h-5 text-muted-foreground" />}
-          />
+          <ImageWithFallback src={imageUrl} alt={item.productName} className="w-full h-full object-cover" fallback={<ImageIcon className="w-5 h-5 text-muted-foreground" />} />
         ) : (
           <ImageIcon className="w-5 h-5 text-muted-foreground" />
         )}
@@ -234,9 +212,7 @@ function ProductItem({ item }: { item: EnrichedOrder['productDetails'][0] }) {
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span>Rs. {item.price.toFixed(0)}</span>
-            {item.discount > 0 && (
-              <span className="text-green-600">-{item.discount}%</span>
-            )}
+            {item.discount > 0 && <span className="text-green-600">-{item.discount}%</span>}
           </div>
           <span className="font-semibold">Rs. {item.finalPrice.toFixed(0)}</span>
         </div>

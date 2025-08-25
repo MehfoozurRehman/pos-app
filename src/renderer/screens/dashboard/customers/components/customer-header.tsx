@@ -12,9 +12,7 @@ export function CustomerHeader({ totalCustomers }: CustomerHeaderProps) {
           <Users className="w-6 h-6" />
           Customers
         </h1>
-        <p className="text-muted-foreground">
-          View customer insights and purchase history ({totalCustomers} customers)
-        </p>
+        <p className="text-muted-foreground">View customer insights and purchase history ({totalCustomers} customers)</p>
       </div>
     </div>
   );

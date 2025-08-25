@@ -21,14 +21,7 @@ interface InventoryGridProps {
   onCreateInventory: () => void;
 }
 
-export function InventoryGrid({ 
-  filteredInventory, 
-  searchQuery, 
-  selectedProduct, 
-  onEdit, 
-  onDelete, 
-  onCreateInventory 
-}: InventoryGridProps) {
+export function InventoryGrid({ filteredInventory, searchQuery, selectedProduct, onEdit, onDelete, onCreateInventory }: InventoryGridProps) {
   const [parent] = useAutoAnimate();
 
   return (
@@ -39,12 +32,7 @@ export function InventoryGrid({
             <CardContent className="p-12 text-center">
               <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No inventory items found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchQuery || selectedProduct !== 'All' 
-                  ? 'Try adjusting your search or filters' 
-                  : 'Get started by adding your first inventory item'
-                }
-              </p>
+              <p className="text-muted-foreground mb-4">{searchQuery || selectedProduct !== 'All' ? 'Try adjusting your search or filters' : 'Get started by adding your first inventory item'}</p>
               {!searchQuery && selectedProduct === 'All' && (
                 <Button onClick={onCreateInventory}>
                   <Plus className="w-4 h-4 mr-2" />
@@ -55,14 +43,7 @@ export function InventoryGrid({
           </Card>
         </div>
       ) : (
-        filteredInventory.map((item) => (
-          <InventoryCard 
-            key={item.id} 
-            item={item} 
-            onEdit={onEdit} 
-            onDelete={onDelete} 
-          />
-        ))
+        filteredInventory.map((item) => <InventoryCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />)
       )}
     </div>
   );

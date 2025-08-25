@@ -12,9 +12,7 @@ export function OrderHeader({ totalOrders }: OrderHeaderProps) {
           <ShoppingBag className="w-6 h-6" />
           Orders
         </h1>
-        <p className="text-muted-foreground">
-          Manage and track all your orders ({totalOrders} orders)
-        </p>
+        <p className="text-muted-foreground">Manage and track all your orders ({totalOrders} orders)</p>
       </div>
     </div>
   );

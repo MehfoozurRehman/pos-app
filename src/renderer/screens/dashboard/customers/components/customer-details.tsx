@@ -45,9 +45,7 @@ export function CustomerDetails({ customer, products }: CustomerDetailsProps) {
         <CardContent className="p-12 text-center">
           <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Select a Customer</h3>
-          <p className="text-muted-foreground">
-            Click on a customer to view their detailed information and purchase history
-          </p>
+          <p className="text-muted-foreground">Click on a customer to view their detailed information and purchase history</p>
         </CardContent>
       </Card>
     );
@@ -79,10 +77,7 @@ export function CustomerDetails({ customer, products }: CustomerDetailsProps) {
               <Phone className="w-4 h-4" />
               <span>{customer.phone}</span>
             </div>
-            <Badge 
-              variant="secondary" 
-              className={`text-white ${tierInfo.color}`}
-            >
+            <Badge variant="secondary" className={`text-white ${tierInfo.color}`}>
               <Star className="w-3 h-3 mr-1" />
               {tierInfo.tier} - {tierInfo.description}
             </Badge>
@@ -117,12 +112,8 @@ export function CustomerDetails({ customer, products }: CustomerDetailsProps) {
                 <Calendar className="w-4 h-4" />
                 <span>Last Order</span>
               </div>
-              <div className="font-semibold text-sm">
-                {dayjs(customer.lastOrderDate).format('MMM D, YYYY')}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                ({dayjs(customer.lastOrderDate).fromNow()})
-              </div>
+              <div className="font-semibold text-sm">{dayjs(customer.lastOrderDate).format('MMM D, YYYY')}</div>
+              <div className="text-xs text-muted-foreground">({dayjs(customer.lastOrderDate).fromNow()})</div>
             </div>
           </div>
         </CardContent>
@@ -141,9 +132,7 @@ export function CustomerDetails({ customer, products }: CustomerDetailsProps) {
                   <p className="text-muted-foreground text-sm">No products purchased yet</p>
                 </div>
               ) : (
-                customer.favoriteProducts.map((product) => (
-                  <ProductItem key={product.productId} product={product} />
-                ))
+                customer.favoriteProducts.map((product) => <ProductItem key={product.productId} product={product} />)
               )}
             </div>
           </ScrollArea>
@@ -183,12 +172,7 @@ function ProductItem({ product }: { product: CustomerData['favoriteProducts'][0]
     <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
       <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex items-center justify-center">
         {imageUrl ? (
-          <ImageWithFallback
-            src={imageUrl}
-            alt={product.productName}
-            className="w-full h-full object-cover"
-            fallback={<ImageIcon className="w-4 h-4 text-muted-foreground" />}
-          />
+          <ImageWithFallback src={imageUrl} alt={product.productName} className="w-full h-full object-cover" fallback={<ImageIcon className="w-4 h-4 text-muted-foreground" />} />
         ) : (
           <ImageIcon className="w-4 h-4 text-muted-foreground" />
         )}

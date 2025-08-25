@@ -23,12 +23,15 @@ export function OrderStats({ orders }: OrderStatsProps) {
   const totalOrders = orders.length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
   const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-  
-  const statusCounts = orders.reduce((acc, order) => {
-    const status = order.status || 'draft';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+
+  const statusCounts = orders.reduce(
+    (acc, order) => {
+      const status = order.status || 'draft';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const completedOrders = statusCounts.completed || 0;
   const pendingOrders = statusCounts.pending || 0;

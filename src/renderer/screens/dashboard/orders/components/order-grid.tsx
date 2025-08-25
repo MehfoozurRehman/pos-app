@@ -34,13 +34,7 @@ interface OrderGridProps {
   onDeleteOrder: (orderId: string) => void;
 }
 
-export function OrderGrid({ 
-  orders, 
-  onSelectOrder, 
-  selectedOrder,
-  onUpdateStatus,
-  onDeleteOrder
-}: OrderGridProps) {
+export function OrderGrid({ orders, onSelectOrder, selectedOrder, onUpdateStatus, onDeleteOrder }: OrderGridProps) {
   const [parent] = useAutoAnimate();
 
   return (
@@ -52,21 +46,12 @@ export function OrderGrid({
             <CardContent className="p-12 text-center">
               <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No orders found</h3>
-              <p className="text-muted-foreground">
-                Orders will appear here once they are created
-              </p>
+              <p className="text-muted-foreground">Orders will appear here once they are created</p>
             </CardContent>
           </Card>
         ) : (
           orders.map((order) => (
-            <OrderCard 
-              key={order.id}
-              order={order} 
-              onClick={() => onSelectOrder(order)}
-              isSelected={selectedOrder?.id === order.id}
-              onUpdateStatus={onUpdateStatus}
-              onDeleteOrder={onDeleteOrder}
-            />
+            <OrderCard key={order.id} order={order} onClick={() => onSelectOrder(order)} isSelected={selectedOrder?.id === order.id} onUpdateStatus={onUpdateStatus} onDeleteOrder={onDeleteOrder} />
           ))
         )}
       </div>

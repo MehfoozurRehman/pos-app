@@ -26,11 +26,7 @@ interface CustomerGridProps {
   selectedCustomer: CustomerData | null;
 }
 
-export function CustomerGrid({ 
-  customers, 
-  onSelectCustomer, 
-  selectedCustomer 
-}: CustomerGridProps) {
+export function CustomerGrid({ customers, onSelectCustomer, selectedCustomer }: CustomerGridProps) {
   const [parent] = useAutoAnimate();
 
   return (
@@ -42,16 +38,14 @@ export function CustomerGrid({
             <CardContent className="p-12 text-center">
               <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No customers found</h3>
-              <p className="text-muted-foreground">
-                Customers will appear here once orders are placed
-              </p>
+              <p className="text-muted-foreground">Customers will appear here once orders are placed</p>
             </CardContent>
           </Card>
         ) : (
           customers.map((customer) => (
-            <CustomerCard 
+            <CustomerCard
               key={`${customer.name}-${customer.phone}`}
-              customer={customer} 
+              customer={customer}
               onClick={() => onSelectCustomer(customer)}
               isSelected={selectedCustomer?.name === customer.name && selectedCustomer?.phone === customer.phone}
             />

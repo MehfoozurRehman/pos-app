@@ -40,21 +40,13 @@ export function CustomerCard({ customer, onClick, isSelected }: CustomerCardProp
   const tierInfo = getCustomerTier(customer.totalSpent);
 
   return (
-    <Card 
-      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-        isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'
-      }`}
-      onClick={onClick}
-    >
+    <Card className={`cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'}`} onClick={onClick}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-lg">{customer.name}</h3>
-              <Badge 
-                variant="secondary" 
-                className={`text-white text-xs ${tierInfo.color}`}
-              >
+              <Badge variant="secondary" className={`text-white text-xs ${tierInfo.color}`}>
                 <Star className="w-3 h-3 mr-1" />
                 {tierInfo.tier}
               </Badge>
@@ -86,9 +78,7 @@ export function CustomerCard({ customer, onClick, isSelected }: CustomerCardProp
               <Calendar className="w-3 h-3" />
               <span>Last Order</span>
             </div>
-            <div className="font-semibold text-xs">
-              {dayjs(customer.lastOrderDate).fromNow()}
-            </div>
+            <div className="font-semibold text-xs">{dayjs(customer.lastOrderDate).fromNow()}</div>
           </div>
         </div>
 
