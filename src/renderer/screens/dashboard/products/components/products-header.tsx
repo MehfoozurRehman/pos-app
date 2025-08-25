@@ -1,6 +1,5 @@
 import { Button } from '@renderer/components/ui/button';
 import { Plus } from 'lucide-react';
-import React from 'react';
 
 interface ProductsHeaderProps {
   onCreateProduct: () => void;
