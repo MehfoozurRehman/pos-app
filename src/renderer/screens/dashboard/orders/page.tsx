@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { OrderFilters, OrderGrid, OrderHeader, OrderDetails, OrderStats } from './components';
+import { Inventory, Order, Product } from 'src/types';
+import { OrderDetails, OrderFilters, OrderGrid, OrderHeader, OrderStats } from './components';
 import { useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
-import { Order, Product, Inventory } from 'src/types';
 import { toast } from 'sonner';
 
 interface EnrichedOrder extends Order {
@@ -56,7 +56,6 @@ export default function OrdersPage() {
         };
       });
 
-      // Apply order-level discount
       if (order.discount) {
         total = total * (1 - order.discount / 100);
       }
@@ -84,7 +83,6 @@ export default function OrdersPage() {
       return matchesSearch && matchesStatus;
     });
 
-    // Sort orders
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'date':
