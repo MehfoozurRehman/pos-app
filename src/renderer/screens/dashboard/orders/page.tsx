@@ -103,7 +103,6 @@ export default function OrdersPage() {
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      // Get the current order to check its current status
       const currentOrder = enrichedOrders.find((order) => order.id === orderId);
       if (!currentOrder) {
         toast.error('Order not found');
@@ -112,16 +111,15 @@ export default function OrdersPage() {
 
       const oldStatus = currentOrder.status;
 
-      // Update the order status
       await window.api.db.update('orders', orderId, { status: newStatus });
 
-      // Handle inventory management based on status changes
+      
       if (oldStatus !== newStatus) {
         await handleInventoryStatusChange(currentOrder, oldStatus, newStatus);
       }
 
       await mutate('orders');
-      await mutate('inventory'); // Refresh inventory data
+      await mutate('inventory');
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
       console.error('Failed to update order status:', error);
@@ -134,7 +132,6 @@ export default function OrdersPage() {
       const inventory = await window.api.db.get('inventory');
       if (!inventory) return;
 
-      // When order is completed: remove inventory items
       if (newStatus === 'completed' && oldStatus !== 'completed') {
         for (const item of order.items) {
           const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
@@ -144,22 +141,16 @@ export default function OrdersPage() {
         }
       }
 
-      // When order is cancelled or changed from completed: restore inventory items
       else if ((newStatus === 'cancelled' && oldStatus === 'completed') || (oldStatus === 'completed' && newStatus !== 'completed')) {
-        // We need to restore the inventory items
-        // Note: This is a simplified restoration - in a real system you might want to track this differently
         for (const item of order.items) {
-          // Check if the inventory item already exists (in case it was manually re-added)
           const existingItem = inventory.find((inv) => inv.barcode === item.barcode);
           if (!existingItem) {
-            // We need to get the original inventory data to restore it
-            // For now, we'll create a basic inventory item - in production you'd want to store this data
             const productDetails = order.productDetails.find((pd) => pd.productId === item.productId);
             if (productDetails) {
               const inventoryData = {
                 productId: item.productId,
                 barcode: item.barcode,
-                actualPrice: productDetails.price, // Using selling price as actual price (not ideal but works)
+                actualPrice: productDetails.price,
                 sellingPrice: productDetails.price,
                 createdAt: new Date().toISOString(),
               };
@@ -170,7 +161,7 @@ export default function OrdersPage() {
       }
     } catch (error) {
       console.error('Error managing inventory during status change:', error);
-      // Don't throw here to avoid breaking the status update
+      
     }
   };
 
@@ -178,18 +169,15 @@ export default function OrdersPage() {
     if (!confirm('Are you sure you want to delete this order?')) return;
 
     try {
-      // Get the order before deleting to handle inventory restoration
       const orderToDelete = enrichedOrders.find((order) => order.id === orderId);
 
       await window.api.db.delete('orders', orderId);
-
-      // If the deleted order was completed, restore its inventory items
       if (orderToDelete && orderToDelete.status === 'completed') {
         await handleInventoryStatusChange(orderToDelete, 'completed', 'cancelled');
       }
 
       await mutate('orders');
-      await mutate('inventory'); // Refresh inventory data
+      await mutate('inventory');
       toast.success('Order deleted successfully');
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(null);
