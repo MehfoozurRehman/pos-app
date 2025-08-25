@@ -24,14 +24,14 @@ export default function Products() {
 
   const categories = useMemo(() => {
     if (!products) return [];
-    const allCategories = products.flatMap((p: Product) => p.categories || []);
+    const allCategories = products.flatMap((p) => p.categories || []);
     return Array.from(new Set(allCategories));
   }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
 
-    return products.filter((product: Product) => {
+    return products.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || product.description.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesCategory = selectedCategory === 'All' || (product.categories && product.categories.includes(selectedCategory));
