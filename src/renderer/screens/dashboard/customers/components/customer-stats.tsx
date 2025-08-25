@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card';
-import { Users, ShoppingBag, DollarSign, TrendingUp } from 'lucide-react';
+import { Card, CardContent } from '@renderer/components/ui/card';
+import { DollarSign, ShoppingBag, TrendingUp, Users } from 'lucide-react';
 
 interface CustomerData {
   name: string;
