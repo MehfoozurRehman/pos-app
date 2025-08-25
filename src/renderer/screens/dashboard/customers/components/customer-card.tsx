@@ -1,5 +1,5 @@
+import { Calendar, DollarSign, Phone, ShoppingBag, Star } from 'lucide-react';
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { Phone, ShoppingBag, DollarSign, Calendar, Star } from 'lucide-react';
 
 import { Badge } from '@renderer/components/ui/badge';
 import dayjs from 'dayjs';
@@ -57,7 +57,6 @@ export function CustomerCard({ customer, onClick, isSelected }: CustomerCardProp
             </div>
           </div>
         </div>
-
         <div className="grid grid-cols-3 gap-4 mb-3">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground mb-1">
@@ -81,7 +80,6 @@ export function CustomerCard({ customer, onClick, isSelected }: CustomerCardProp
             <div className="font-semibold text-xs">{dayjs(customer.lastOrderDate).fromNow()}</div>
           </div>
         </div>
-
         {customer.favoriteProducts.length > 0 && (
           <div>
             <div className="text-xs text-muted-foreground mb-2">Favorite Products:</div>
