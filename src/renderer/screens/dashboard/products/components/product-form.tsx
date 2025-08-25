@@ -40,6 +40,14 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    if (!isOpen) {
+      return () => {
+        setFormData(initialFormData);
+      };
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (editingProduct) {
       setFormData({
         name: editingProduct.name,
@@ -50,11 +58,7 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
     } else {
       setFormData(initialFormData);
     }
-
-    return () => {
-      setFormData(initialFormData);
-    };
-  }, [editingProduct]);
+  }, [editingProduct, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +71,8 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
     }
 
     await onSubmit(formData);
+
+    setFormData(initialFormData);
   };
 
   const handleAddCategory = () => {
@@ -89,7 +95,7 @@ export function ProductForm({ isOpen, onOpenChange, editingProduct, onSubmit, is
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent side={isMobile ? 'bottom' : 'right'} className="w-full sm:max-w-md">
+      <DrawerContent side={isMobile ? 'bottom' : 'right'} className="w-full">
         <DrawerHeader>
           <DrawerTitle>{editingProduct ? 'Edit Product' : 'Create Product'}</DrawerTitle>
         </DrawerHeader>
