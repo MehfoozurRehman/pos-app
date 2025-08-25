@@ -4,7 +4,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/u
 import { Order, Product } from 'src/types';
 import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@/constants/state';
 import { useAtom, useAtomValue } from 'jotai/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 import { Badge } from '@renderer/components/ui/badge';
@@ -30,6 +30,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      <GlobalBarcodeScanner />
       <motion.div initial={{ paddingRight: 0 }} animate={{ paddingRight: isAnyPanelInvisible ? '50px' : '0px' }} className="flex flex-col gap-4 flex-1 overflow-hidden">
         <ShopHeader />
         <div className="flex gap-4 flex-1">
@@ -45,10 +46,168 @@ export default function Dashboard() {
   );
 }
 
+function GlobalBarcodeScanner() {
+  const [, setCart] = useAtom(cartAtom);
+  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
+  const { data: products } = useSWR('products', () => window.api.db.get('products'));
+  const barcodeInputRef = useRef<HTMLInputElement>(null);
+  const [barcodeBuffer, setBarcodeBuffer] = useState('');
+  const [lastInputTime, setLastInputTime] = useState(0);
+
+  // Auto-focus the barcode input when component mounts and keep it focused
+  useEffect(() => {
+    const focusInput = () => {
+      if (barcodeInputRef.current && document.activeElement !== barcodeInputRef.current) {
+        barcodeInputRef.current.focus();
+      }
+    };
+
+    // Focus initially
+    focusInput();
+
+    // Re-focus when clicking anywhere on the page
+    const handleClick = () => {
+      setTimeout(focusInput, 10);
+    };
+
+    // Re-focus when pressing any key
+    const handleKeyDown = () => {
+      setTimeout(focusInput, 10);
+    };
+
+    document.addEventListener('click', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Re-focus periodically to ensure it stays focused
+    const interval = setInterval(focusInput, 1000);
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const addToCartByBarcode = async (barcode: string) => {
+    if (!inventory || !products) {
+      toast.error('Data not loaded yet');
+      return;
+    }
+
+    // Find the inventory item by barcode
+    const inventoryItem = inventory.find((item) => item.barcode === barcode);
+    if (!inventoryItem) {
+      toast.error(`Product with barcode ${barcode} not found`);
+      return;
+    }
+
+    // Find the product details
+    const product = products.find((p) => p.id === inventoryItem.productId);
+    if (!product) {
+      toast.error('Product details not found');
+      return;
+    }
+
+    // Add to cart
+    setCart((prev) => {
+      if (prev === null) return null;
+
+      const draft = prev || {
+        id: `draft-${Date.now()}`,
+        orderId: `#draft-${Date.now()}`,
+        status: 'draft',
+        customerName: '',
+        customerPhone: '',
+        items: [],
+        discount: 0,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Check if item is already in cart
+      const existingItem = draft.items.find((item) => item.barcode === barcode);
+      if (existingItem) {
+        toast.error('This item is already in the cart');
+        return prev;
+      }
+
+      // Add the item
+      draft.items = [
+        ...(draft.items || []),
+        {
+          productId: inventoryItem.productId,
+          barcode: barcode,
+          discount: 0,
+        },
+      ];
+
+      return draft;
+    });
+
+    toast.success(`Added ${product.name} to cart`);
+  };
+
+  const handleBarcodeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const currentTime = Date.now();
+
+    // If more than 100ms has passed since last input, start a new barcode
+    if (currentTime - lastInputTime > 100) {
+      setBarcodeBuffer(value);
+    } else {
+      setBarcodeBuffer((prev) => prev + value);
+    }
+
+    setLastInputTime(currentTime);
+
+    // Clear the input immediately to prepare for next scan
+    e.target.value = '';
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && barcodeBuffer.trim()) {
+      e.preventDefault();
+      addToCartByBarcode(barcodeBuffer.trim());
+      setBarcodeBuffer('');
+    }
+  };
+
+  // Auto-submit barcode after a short delay (typical for barcode scanners)
+  useEffect(() => {
+    if (barcodeBuffer.length > 0) {
+      const timer = setTimeout(() => {
+        if (barcodeBuffer.trim()) {
+          addToCartByBarcode(barcodeBuffer.trim());
+          setBarcodeBuffer('');
+        }
+      }, 50); // 50ms delay after last character
+
+      return () => clearTimeout(timer);
+    }
+  }, [barcodeBuffer]);
+
+  return (
+    <input
+      ref={barcodeInputRef}
+      type="text"
+      onChange={handleBarcodeInput}
+      onKeyDown={handleKeyDown}
+      style={{
+        position: 'absolute',
+        left: '-9999px',
+        top: '-9999px',
+        opacity: 0,
+        pointerEvents: 'none',
+      }}
+      tabIndex={-1}
+      autoComplete="off"
+      aria-hidden="true"
+    />
+  );
+}
+
 function ShopHeader() {
   const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
-  const navigate = useNavigate();
 
   const todayOrders = useMemo(() => {
     if (!orders) return 0;
@@ -56,27 +215,7 @@ function ShopHeader() {
     return orders.filter((order: Order) => dayjs(order.createdAt).isAfter(today)).length;
   }, [orders]);
 
-  if (!shop) {
-    return (
-      <div className="border-b bg-background/50 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-              <Store className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Welcome to POS System</h1>
-              <p className="text-sm text-muted-foreground">Set up your shop details to get started</p>
-            </div>
-          </div>
-          <Button onClick={() => navigate('/dashboard/settings')} variant="outline">
-            <Store className="w-4 h-4" />
-            Setup Shop
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  if (!shop) return null;
 
   return (
     <div className="border-b bg-gradient-to-r from-background/80 to-background/50 p-4">
@@ -149,7 +288,23 @@ function DashboardStats() {
 
     const totalRevenue = completedOrders.reduce((sum: number, order: Order) => {
       const orderTotal = order.items.reduce((itemSum: number, item) => {
-        const inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+        // Try to find the inventory item first (for current items)
+        let inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
+
+        // If not found in current inventory (because it was sold),
+        // we need to calculate based on other items of the same product
+        if (!inventoryItem) {
+          const product = products.find((p) => p.id === item.productId);
+          if (product) {
+            const productInventory = inventory.filter((inv) => inv.productId === product.id);
+            if (productInventory.length > 0) {
+              // Use average price of remaining inventory for this product
+              const avgPrice = productInventory.reduce((sum, inv) => sum + inv.sellingPrice, 0) / productInventory.length;
+              inventoryItem = { sellingPrice: avgPrice } as any;
+            }
+          }
+        }
+
         const price = inventoryItem?.sellingPrice || 0;
         const discount = item.discount || 0;
         return itemSum + (price - discount);
@@ -342,58 +497,84 @@ function ProductCard({ product }: { product: EnrichedProduct }) {
   };
 
   const handleAdd = async () => {
-    const inv = await window.api.db.get('inventory');
-    let found;
-
-    if (barcode.trim()) {
-      found = (inv || []).find((i) => i.barcode === barcode && i.productId === product.id);
-      if (!found) {
-        toast.error('Barcode not found for this product');
+    try {
+      const inv = await window.api.db.get('inventory');
+      if (!inv) {
+        toast.error('Failed to load inventory data');
         return;
       }
-    } else {
-      const availableItems = (inv || []).filter((i) => i.productId === product.id);
-      if (availableItems.length === 0) {
-        toast.error('No inventory available for this product');
-        return;
+
+      let found;
+
+      if (barcode.trim()) {
+        found = inv.find((i) => i.barcode === barcode && i.productId === product.id);
+        if (!found) {
+          toast.error('Barcode not found for this product');
+          return;
+        }
+      } else {
+        // Get current cart to check which items are already used
+        const currentCart = await new Promise<any>((resolve) => {
+          setCart((prev) => {
+            resolve(prev);
+            return prev;
+          });
+        });
+
+        // Filter out items that are already in the current cart
+        const usedBarcodes = currentCart?.items?.map((item: any) => item.barcode) || [];
+        const availableItems = inv.filter((i) => i.productId === product.id && !usedBarcodes.includes(i.barcode));
+
+        if (availableItems.length === 0) {
+          toast.error('No inventory available for this product');
+          return;
+        }
+        found = availableItems[0];
       }
-      found = availableItems[0];
-    }
 
-    setCart((prev) => {
-      if (prev === null) return null;
+      // Double-check that the item isn't already in cart
+      let additionSuccessful = false;
 
-      const draft = prev || {
-        id: undefined,
-        orderId: `#draft-${Date.now()}`,
-        status: 'draft',
-        customerName: '',
-        customerPhone: '',
-        items: [],
-        discount: 0,
-        createdAt: new Date().toISOString(),
-      };
-
-      const existingItem = draft.items.find((item) => item.barcode === found.barcode);
-      if (existingItem) {
-        toast.error('This item is already in the cart');
-        return prev;
-      }
-
-      draft.items = [
-        ...(draft.items || []),
-        {
-          productId: product.id,
-          barcode: found.barcode,
+      setCart((prev) => {
+        const draft = prev || {
+          id: `draft-${Date.now()}`,
+          orderId: `#draft-${Date.now()}`,
+          status: 'draft',
+          customerName: '',
+          customerPhone: '',
+          items: [],
           discount: 0,
-        },
-      ];
+          createdAt: new Date().toISOString(),
+        };
 
-      return draft;
-    });
+        const existingItem = draft.items.find((item) => item.barcode === found.barcode);
+        if (existingItem) {
+          toast.error('This item is already in the cart');
+          return prev;
+        }
 
-    toast.success(`Added ${product.name} to cart`);
-    setShowAddDrawer(false);
+        draft.items = [
+          ...(draft.items || []),
+          {
+            productId: product.id,
+            barcode: found.barcode,
+            discount: 0,
+          },
+        ];
+
+        additionSuccessful = true;
+        return draft;
+      });
+
+      if (additionSuccessful) {
+        toast.success(`Added ${product.name} to cart`);
+        setShowAddDrawer(false);
+        setBarcode(''); // Clear barcode input
+      }
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      toast.error('Failed to add item to cart. Please try again.');
+    }
   };
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
