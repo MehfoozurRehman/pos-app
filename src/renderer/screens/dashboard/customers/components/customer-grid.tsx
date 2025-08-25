@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@renderer/components/ui/card';
-import { Users } from 'lucide-react';
 
 import { CustomerCard } from './customer-card';
+import { Users } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 interface CustomerData {
