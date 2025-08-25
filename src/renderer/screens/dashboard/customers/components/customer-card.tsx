@@ -2,26 +2,11 @@ import { Calendar, DollarSign, Phone, ShoppingBag, Star } from 'lucide-react';
 import { Card, CardContent } from '@renderer/components/ui/card';
 
 import { Badge } from '@renderer/components/ui/badge';
+import { CustomerData } from 'src/types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
-
-interface CustomerData {
-  name: string;
-  phone: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  favoriteProducts: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    quantity: number;
-    totalSpent: number;
-  }>;
-  orders: any[];
-}
 
 interface CustomerCardProps {
   customer: CustomerData;
