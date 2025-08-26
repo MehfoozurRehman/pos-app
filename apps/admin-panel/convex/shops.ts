@@ -193,6 +193,10 @@ export const authenticateShop = mutation({
       throw new Error('Invalid Password');
     }
 
+    if (shop.loginAt) {
+      throw new Error('Shop already logged in. Please contact the developer for further instructions');
+    }
+
     let logoUrl = null as string | null;
 
     if (shop.logoUrl?.includes('data:image')) {
