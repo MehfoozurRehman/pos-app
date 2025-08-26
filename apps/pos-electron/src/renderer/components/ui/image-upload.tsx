@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from './button';
 import { Card } from './card';
 import { cn } from '@/utils';
-import { toast } from 'sonner';
 import { logger } from '@renderer/utils/logger';
+import { toast } from 'sonner';
 
 type ImageUploadProps = {
   value?: string;
@@ -34,7 +34,10 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
       }
 
       try {
-        if (!value.startsWith('http') && !value.startsWith('file://')) {
+        if (value.startsWith('data:image')) {
+          logger.debug('Using data URL for image preview', 'image-preview', { dataUrlPrefix: value.substring(0, 30) + '...' });
+          setPreview(value);
+        } else if (!value.startsWith('http') && !value.startsWith('file://')) {
           logger.debug('Getting URL for local media file', 'image-preview', { filename: value });
           const url = await window.api.media.getUrl(value);
           logger.debug('Retrieved media URL successfully', 'image-preview', { filename: value, url });
@@ -150,7 +153,7 @@ export function ImageUpload({ value, onChange, className, disabled = false, acce
 
       if (disabled || isUploading) return;
 
-      if (value && !value.startsWith('http') && !value.startsWith('file://')) {
+      if (value && !value.startsWith('http') && !value.startsWith('file://') && !value.startsWith('data:image')) {
         try {
           logger.debug('Starting media file deletion', 'image-upload', { filename: value });
           await window.api.media.delete(value);
