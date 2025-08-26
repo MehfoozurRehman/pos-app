@@ -17,6 +17,7 @@ import { logger } from '@renderer/utils/logger';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
+import useShop from '@/hooks/use-shop';
 
 type EnrichedProduct = Product & {
   averagePrice: number;
@@ -24,12 +25,17 @@ type EnrichedProduct = Product & {
   inStock: boolean;
 };
 
-export function ProductsPanel({ inventoryMode }: { inventoryMode: 'barcode' | 'quantity' }) {
+export function ProductsPanel() {
   const [parent] = useAutoAnimate();
+
+  const { inventoryMode } = useShop();
+
   const { data: products } = useSWR('products', () => window.api.db.get('products'));
+
   const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
 
   const [selectedTag, setSelectedTag] = useState<string>('All');
+
   const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
 
   const [query, setQuery] = useState('');
@@ -161,14 +167,10 @@ function ProductCard({ product, inventoryMode }: { product: EnrichedProduct; inv
               toast.error(`Insufficient stock. Available: ${productInventory.quantity}, Total requested: ${newQuantity}`);
               return prev;
             }
-            
+
             updatedCart = {
               ...cart,
-              items: cart.items.map((item) =>
-                item.productId === product.id
-                  ? { ...item, quantity: newQuantity }
-                  : item
-              ),
+              items: cart.items.map((item) => (item.productId === product.id ? { ...item, quantity: newQuantity } : item)),
               updatedAt: new Date().toISOString(),
             };
           } else {
@@ -177,122 +179,115 @@ function ProductCard({ product, inventoryMode }: { product: EnrichedProduct; inv
               items: [
                 ...cart.items,
                 {
-                   productId: product.id,
-                   barcode: '',
-                   discount: 0,
-                   quantity: quantity,
-                 },
-               ],
-               updatedAt: new Date().toISOString(),
-             };
-           }
+                  productId: product.id,
+                  barcode: '',
+                  discount: 0,
+                  quantity: quantity,
+                },
+              ],
+              updatedAt: new Date().toISOString(),
+            };
+          }
 
-           additionSuccessful = true;
-           return updatedCart;
-         });
-       } else {
-         let found;
+          additionSuccessful = true;
+          return updatedCart;
+        });
+      } else {
+        let found;
 
-         if (barcode.trim()) {
-           found = inv.find((i) => i.barcode === barcode.trim() && i.productId === product.id);
-           if (!found) {
-             toast.error(`Barcode "${barcode.trim()}" not found for ${product.name}. Please verify the barcode.`);
-             return;
-           }
-         } else {
-           const currentCart = await new Promise<any>((resolve) => {
-             setCart((prev) => {
-               resolve(prev);
-               return prev;
-             });
-           });
+        if (barcode.trim()) {
+          found = inv.find((i) => i.barcode === barcode.trim() && i.productId === product.id);
+          if (!found) {
+            toast.error(`Barcode "${barcode.trim()}" not found for ${product.name}. Please verify the barcode.`);
+            return;
+          }
+        } else {
+          const currentCart = await new Promise<any>((resolve) => {
+            setCart((prev) => {
+              resolve(prev);
+              return prev;
+            });
+          });
 
-           const usedBarcodes = currentCart?.items?.map((item: any) => item.barcode) || [];
-           const availableItems = inv.filter((i) => 
-             i.productId === product.id && 
-             !usedBarcodes.includes(i.barcode) &&
-             i.barcode &&
-             i.sellingPrice > 0
-           );
+          const usedBarcodes = currentCart?.items?.map((item: any) => item.barcode) || [];
+          const availableItems = inv.filter((i) => i.productId === product.id && !usedBarcodes.includes(i.barcode) && i.barcode && i.sellingPrice > 0);
 
-           if (availableItems.length === 0) {
-             toast.error(`No available inventory for "${product.name}". All items may already be in cart or out of stock.`);
-             return;
-           }
-           found = availableItems[0];
-         }
+          if (availableItems.length === 0) {
+            toast.error(`No available inventory for "${product.name}". All items may already be in cart or out of stock.`);
+            return;
+          }
+          found = availableItems[0];
+        }
 
-         if (!found.barcode || !found.productId || found.sellingPrice < 0) {
-           toast.error('Invalid inventory item data');
-           return;
-         }
+        if (!found.barcode || !found.productId || found.sellingPrice < 0) {
+          toast.error('Invalid inventory item data');
+          return;
+        }
 
-         setCart((prev) => {
-           const cart = prev || {
-             id: `cart-${Date.now()}`,
-             orderId: `#cart-${Date.now()}`,
-             status: 'cart',
-             customerName: '',
-             customerPhone: '',
-             items: [],
-             discount: 0,
-             createdAt: new Date().toISOString(),
-             updatedAt: new Date().toISOString(),
-           };
+        setCart((prev) => {
+          const cart = prev || {
+            id: `cart-${Date.now()}`,
+            orderId: `#cart-${Date.now()}`,
+            status: 'cart',
+            customerName: '',
+            customerPhone: '',
+            items: [],
+            discount: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
 
-           const existingItem = cart.items.find((item) => item.barcode === found.barcode);
-           if (existingItem) {
-             toast.error(`"${product.name}" is already in your cart. You can modify quantity from the cart.`);
-             return prev;
-           }
+          const existingItem = cart.items.find((item) => item.barcode === found.barcode);
+          if (existingItem) {
+            toast.error(`"${product.name}" is already in your cart. You can modify quantity from the cart.`);
+            return prev;
+          }
 
-           const updatedCart = {
-             ...cart,
-             items: [
-               ...cart.items,
-               {
-                 productId: product.id,
-                 barcode: found.barcode,
-                 discount: 0,
-                 quantity: 1,
-               },
-             ],
-             updatedAt: new Date().toISOString(),
-           };
+          const updatedCart = {
+            ...cart,
+            items: [
+              ...cart.items,
+              {
+                productId: product.id,
+                barcode: found.barcode,
+                discount: 0,
+                quantity: 1,
+              },
+            ],
+            updatedAt: new Date().toISOString(),
+          };
 
-           (async () => {
-             try {
-               const existingCart = await window.api.db.get('orders').then(orders => 
-                 orders?.find((o: Order) => o.id === updatedCart.id)
-               );
-               
-               if (existingCart) {
-                 await window.api.db.update('orders', updatedCart.id, updatedCart);
-               } else {
-                 await window.api.db.create('orders', updatedCart);
-               }
-               mutate('orders');
-             } catch (error) {
-               logger.error('Failed to save cart to database', 'cart-save', error);
-             }
-           })();
+          (async () => {
+            try {
+              const existingCart = await window.api.db.get('orders').then((orders) => orders?.find((o: Order) => o.id === updatedCart.id));
 
-           const successMessage = `✓ "${product.name}" added to cart successfully!`;
-           toast.success(successMessage);
-           setShowAddDrawer(false);
-           setBarcode('');
-           setQuantity(1);
-           
-           return updatedCart;
-         });
-       }
-      } catch (error) {
-        logger.error('Failed to add item to cart', 'cart-add-item', { productId: product.id, error });
-        toast.error('Failed to add item to cart. Please try again.');
-      } finally {
-        setIsAddingToCart(false);
+              if (existingCart) {
+                await window.api.db.update('orders', updatedCart.id, updatedCart);
+              } else {
+                await window.api.db.create('orders', updatedCart);
+              }
+              mutate('orders');
+            } catch (error) {
+              logger.error('Failed to save cart to database', 'cart-save', error);
+            }
+          })();
+
+          const successMessage = `✓ "${product.name}" added to cart successfully!`;
+          toast.success(successMessage);
+          setShowAddDrawer(false);
+          setBarcode('');
+          setQuantity(1);
+
+          return updatedCart;
+        });
       }
-    };
+    } catch (error) {
+      logger.error('Failed to add item to cart', 'cart-add-item', { productId: product.id, error });
+      toast.error('Failed to add item to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
@@ -368,14 +363,7 @@ function ProductCard({ product, inventoryMode }: { product: EnrichedProduct; inv
             ) : (
               <div>
                 <label className="text-sm font-medium">Quantity</label>
-                <Input 
-                  type="number" 
-                  min="1" 
-                  max={product.stockCount} 
-                  value={quantity} 
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} 
-                  placeholder="Enter quantity" 
-                />
+                <Input type="number" min="1" max={product.stockCount} value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} placeholder="Enter quantity" />
                 <p className="text-xs text-muted-foreground mt-1">Available stock: {product.stockCount}</p>
               </div>
             )}
