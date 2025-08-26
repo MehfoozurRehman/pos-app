@@ -2,6 +2,13 @@ import { mutation, query } from './_generated/server';
 
 import { v } from 'convex/values';
 
+export const getShops = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query('shops').collect();
+  },
+});
+
 export const listShops = query({
   handler: async (ctx) => {
     return ctx.db.query('shops').collect();
@@ -11,28 +18,139 @@ export const listShops = query({
 export const getShop = query({
   args: { id: v.id('shops') },
   handler: async (ctx, args) => {
-    const shop = await ctx.db
+    return await ctx.db.get(args.id);
+  },
+});
+
+export const getShopByShopId = query({
+  args: { shopId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
       .query('shops')
-      .filter((q) => q.eq(q.field('_id'), args.id))
+      .filter((q) => q.eq(q.field('shopId'), args.shopId))
       .first();
-    return shop ?? null;
   },
 });
 
 export const createShop = mutation({
   args: {
-    shopId: v.string(),
     owner: v.string(),
     name: v.string(),
-    logo: v.optional(v.string()),
+    logo: v.string(),
     location: v.string(),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+    description: v.optional(v.string()),
+    theme: v.optional(v.union(v.literal('light'), v.literal('dark'), v.literal('system'))),
+    inventoryMode: v.optional(v.union(v.literal('barcode'), v.literal('quantity'))),
     password: v.string(),
   },
   handler: async (ctx, args) => {
-    const id = await ctx.db.insert('shops', {
+    let shopId: string;
+    let isUnique = false;
+
+    while (!isUnique) {
+      const namePrefix = args.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .substring(0, 8);
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      shopId = `${namePrefix}-${randomSuffix}`;
+
+      const existingShop = await ctx.db
+        .query('shops')
+        .filter((q) => q.eq(q.field('shopId'), shopId))
+        .first();
+
+      if (!existingShop) {
+        isUnique = true;
+      }
+    }
+
+    return await ctx.db.insert('shops', {
       ...args,
-      logo: args.logo ?? '',
+      shopId: shopId!,
+      createdAt: new Date().toISOString(),
     });
-    return id;
+  },
+});
+
+export const updateShop = mutation({
+  args: {
+    id: v.id('shops'),
+    shopId: v.optional(v.string()),
+    owner: v.optional(v.string()),
+    name: v.optional(v.string()),
+    logo: v.optional(v.string()),
+    location: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+    description: v.optional(v.string()),
+    theme: v.optional(v.union(v.literal('light'), v.literal('dark'), v.literal('system'))),
+    inventoryMode: v.optional(v.union(v.literal('barcode'), v.literal('quantity'))),
+    password: v.optional(v.string()),
+    lastLogin: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+
+    if (updates.shopId) {
+      const existingShop = await ctx.db
+        .query('shops')
+        .filter((q) => q.eq(q.field('shopId'), updates.shopId))
+        .first();
+
+      if (existingShop && existingShop._id !== id) {
+        throw new Error('Shop ID already exists');
+      }
+    }
+
+    return await ctx.db.patch(id, updates);
+  },
+});
+
+export const deleteShop = mutation({
+  args: { id: v.id('shops') },
+  handler: async (ctx, args) => {
+    return await ctx.db.delete(args.id);
+  },
+});
+
+export const authenticateShop = mutation({
+  args: {
+    shopId: v.string(),
+    password: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const shop = await ctx.db
+      .query('shops')
+      .filter((q) => q.eq(q.field('shopId'), args.shopId))
+      .first();
+
+    if (!shop) {
+      throw new Error('Shop not found');
+    }
+
+    if (shop.password !== args.password) {
+      throw new Error('Invalid password');
+    }
+
+    await ctx.db.patch(shop._id, {
+      lastLogin: new Date().toISOString(),
+    });
+
+    return {
+      id: shop._id,
+      shopId: shop.shopId,
+      name: shop.name,
+      owner: shop.owner,
+      logo: shop.logo,
+      location: shop.location,
+      phone: shop.phone,
+      email: shop.email,
+      description: shop.description,
+      theme: shop.theme,
+      inventoryMode: shop.inventoryMode,
+    };
   },
 });
