@@ -105,7 +105,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
           <form noValidate onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="shop-id">shop Id</Label>
+                <Label htmlFor="shop-id">Shop Id</Label>
                 <Input id="shop-id" name="shop-id" type="text" placeholder="Enter your shop id" required />
               </div>
               <div className="grid gap-3">
