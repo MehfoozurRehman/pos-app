@@ -1,10 +1,9 @@
-import { httpRouter } from 'convex/server';
-import { httpAction } from './_generated/server';
 import { Id } from './_generated/dataModel';
+import { httpAction } from './_generated/server';
+import { httpRouter } from 'convex/server';
 
 const http = httpRouter();
 
-// Serve uploaded files
 http.route({
   path: '/getFile',
   method: 'GET',
