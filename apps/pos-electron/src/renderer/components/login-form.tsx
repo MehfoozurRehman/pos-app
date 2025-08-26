@@ -8,7 +8,9 @@ import { Loader } from 'lucide-react';
 import { axios } from '@/utils/axios';
 import { cn } from '@/utils';
 import dayjs from 'dayjs';
+import { error } from 'console';
 import { toast } from 'sonner';
+import toastError from '@/utils/toastError';
 import useSWR from 'swr';
 import useShop from '@/hooks/use-shop';
 import { useTransition } from 'react';
@@ -56,7 +58,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         const { data } = (await axios.post('/api/app-auth', {
           shopId,
           password,
-        })) as { data: Shop };
+        })) as { data: Shop | { error: string } };
+
+        if ('error' in data) {
+          throw new Error(data.error);
+        }
 
         window.api.db.update('shop', '', {
           name: data.name,
@@ -73,11 +79,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
         navigate('/dashboard');
       } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error('An unexpected error occurred');
-        }
+        toastError(error);
       }
     });
   };
