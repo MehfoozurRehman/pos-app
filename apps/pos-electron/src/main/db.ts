@@ -83,14 +83,14 @@ export const dbModule = async () => {
   };
 
   ipcMain.removeHandler('log:create');
-  
+
   ipcMain.handle('log:create', async (_event, logData: Omit<Log, 'id'>) => {
     try {
       const log: Log = {
         ...logData,
-        id: genId('log_')
+        id: genId('log_'),
       };
-      
+
       if (!db.data.logs) db.data.logs = [];
       db.data.logs.push(log);
       await safeWrite();
@@ -105,22 +105,22 @@ export const dbModule = async () => {
   ipcMain.handle('log:get', async (_event, options?: { level?: string; limit?: number; since?: string }) => {
     try {
       let logs = db.data.logs || [];
-      
+
       if (options?.level) {
-        logs = logs.filter(log => log.level === options.level);
+        logs = logs.filter((log) => log.level === options.level);
       }
-      
+
       if (options?.since) {
         const sinceDate = new Date(options.since);
-        logs = logs.filter(log => new Date(log.timestamp) > sinceDate);
+        logs = logs.filter((log) => new Date(log.timestamp) > sinceDate);
       }
-      
+
       logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
+
       if (options?.limit) {
         logs = logs.slice(0, options.limit);
       }
-      
+
       return JSON.parse(JSON.stringify(logs));
     } catch (err) {
       logger.error('Failed to get logs', 'log-get', err);
