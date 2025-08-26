@@ -57,10 +57,10 @@ export function ShopDetailsView({ searchParams }: ShopDetailsViewProps) {
     }
   };
 
-  const formatLastLogin = (lastLogin?: string) => {
-    if (!lastLogin) return 'Never';
+  const formatLoginAt = (loginAt?: string) => {
+    if (!loginAt) return 'Never';
     try {
-      return formatDistanceToNow(new Date(lastLogin), { addSuffix: true });
+      return formatDistanceToNow(new Date(loginAt), { addSuffix: true });
     } catch {
       return 'Invalid date';
     }
@@ -133,7 +133,7 @@ export function ShopDetailsView({ searchParams }: ShopDetailsViewProps) {
                 </div>
                 <div className="flex items-center space-x-1">
                   <Clock className="h-4 w-4" />
-                  <span>Last login: {formatLastLogin(shop.lastLogin)}</span>
+                  <span>Last login: {formatLoginAt(shop.loginAt)}</span>
                 </div>
               </div>
             </div>
@@ -195,7 +195,7 @@ export function ShopDetailsView({ searchParams }: ShopDetailsViewProps) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Last Login</span>
-                  <span className="text-sm">{formatLastLogin(shop.lastLogin)}</span>
+                  <span className="text-sm">{formatLoginAt(shop.loginAt)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Total Payments</span>
