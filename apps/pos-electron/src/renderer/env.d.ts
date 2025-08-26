@@ -46,7 +46,11 @@ export interface PreloadAPI {
   db: {
     get: <T extends keyof DBSchema>(table: T) => Promise<DBSchema[T]>;
     create: <T extends keyof DBSchema>(table: T, item: Omit<TableItem<T>, 'id'>) => Promise<TableItem<T>>;
-    update: <T extends keyof DBSchema>(table: T, id: string, patch: Partial<TableItem<T>>) => Promise<TableItem<T> | null>;
+    update: {
+      <T extends keyof DBSchema>(table: T extends 'shop' ? never : T, id: string, patch: Partial<TableItem<T>>): Promise<TableItem<T> | null>;
+      (table: 'shop', patch: Partial<TableItem<'shop'>>): Promise<TableItem<'shop'> | null>;
+      (table: 'shop', id: string, patch: Partial<TableItem<'shop'>>): Promise<TableItem<'shop'> | null>;
+    };
     delete: (table: keyof DBSchema, id: string) => Promise<boolean>;
     changesSince: (
       sinceIso: string,
