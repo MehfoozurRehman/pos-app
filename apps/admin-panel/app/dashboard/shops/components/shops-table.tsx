@@ -1,12 +1,13 @@
 'use client';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Edit, Eye, Loader, MoreHorizontal, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Eye, Loader, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Id } from '@/convex/_generated/dataModel';
+import Image from 'next/image';
 import Link from 'next/link';
 import { api } from '@/convex/_generated/api';
 import { formatDistanceToNow } from 'date-fns';
@@ -93,7 +94,7 @@ export function ShopsTable() {
                   <div className="flex items-center space-x-3">
                     <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                       {shop.logo ? (
-                        <img src={shop.logoUrl || ''} alt={shop.name} className="h-10 w-10 rounded-full object-cover" />
+                        <Image width={200} height={200} src={shop.logoUrl || ''} alt={shop.name} className="h-10 w-10 rounded-full object-cover" />
                       ) : (
                         <span className="text-sm font-medium">{shop.name.charAt(0).toUpperCase()}</span>
                       )}
