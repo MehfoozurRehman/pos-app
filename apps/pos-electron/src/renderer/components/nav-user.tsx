@@ -3,8 +3,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { IconDotsVertical, IconLogout } from '@tabler/icons-react';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 
+import { Loader } from 'lucide-react';
+import { axios } from '@/utils/axios';
 import { useNavigate } from 'react-router';
 import useShop from '@/hooks/use-shop';
+import { useTransition } from 'react';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -12,11 +15,14 @@ export function NavUser() {
 
   const shop = useShop();
 
+  const [isPending, startLogout] = useTransition();
+
   const logout = () => {
-    window.api.db.update('shop', {
-      shopId: '',
+    startLogout(async () => {
+      await axios.post('/api/app-auth/logout', { shopId: shop.shopId });
+      window.api.db.update('shop', { shopId: '' });
+      navigate('/');
     });
-    navigate('/');
   };
 
   return (
@@ -50,8 +56,8 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
-              <IconLogout />
+            <DropdownMenuItem disabled={isPending} onClick={logout}>
+              {isPending ? <Loader className="animate-spin" /> : <IconLogout />}
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
