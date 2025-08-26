@@ -1,11 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { BarChart3, BoxIcon, Clock, DollarSign, EyeIcon, ImageIcon, Mail, MapPin, Package, Phone, ShoppingCart, Store, TrendingUp, X } from 'lucide-react';
-import { logger } from '@renderer/utils/logger';
+import { BarChart3, BoxIcon, Clock, DollarSign, EyeIcon, ImageIcon, Mail, MapPin, Package, Phone, Scan, ShoppingCart, Store, TrendingUp, X } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Order, Product } from 'src/types';
 import { cartAtom, cartVisibilityAtom, orderQueueVisibilityAtom } from '@/constants/state';
 import { useAtom, useAtomValue } from 'jotai/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 import { Badge } from '@renderer/components/ui/badge';
@@ -16,6 +15,7 @@ import { Input } from '@renderer/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ScrollContainer } from '@/components/scroll-container';
 import dayjs from 'dayjs';
+import { logger } from '@renderer/utils/logger';
 import { toast } from 'sonner';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
@@ -33,7 +33,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <GlobalBarcodeScanner inventoryMode={inventoryMode} />
       <motion.div initial={{ paddingRight: 0 }} animate={{ paddingRight: isAnyPanelInvisible ? '50px' : '0px' }} className="flex flex-col gap-4 flex-1 overflow-hidden">
         <ShopHeader />
         <div className="flex gap-4 flex-1">
@@ -49,233 +48,7 @@ export default function Dashboard() {
   );
 }
 
-function GlobalBarcodeScanner({ inventoryMode }: { inventoryMode: 'barcode' | 'quantity' }) {
-  const [, setCart] = useAtom(cartAtom);
-  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
-  const { data: products } = useSWR('products', () => window.api.db.get('products'));
-  const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
-  const barcodeInputRef = useRef<HTMLInputElement>(null);
-  const [barcodeBuffer, setBarcodeBuffer] = useState('');
-  const [lastInputTime, setLastInputTime] = useState(0);
 
-
-  useEffect(() => {
-    const cleanupOldCarts = async () => {
-      if (!orders) return;
-      
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const oldCartOrders = orders.filter((order: Order) => 
-        order.status === 'cart' && 
-        new Date(order.updatedAt || order.createdAt) < oneHourAgo
-      );
-      
-      for (const order of oldCartOrders) {
-        try {
-          await window.api.db.delete('orders', order.id);
-        } catch (error) {
-          logger.error('Failed to cleanup old cart order', 'cart-cleanup', error);
-        }
-      }
-      
-      if (oldCartOrders.length > 0) {
-        mutate('orders');
-      }
-    };
-
-    const interval = setInterval(cleanupOldCarts, 5 * 60 * 1000);
-    cleanupOldCarts();
-
-    return () => clearInterval(interval);
-  }, [orders]);
-
-  useEffect(() => {
-    const focusInput = () => {
-      if (barcodeInputRef.current && document.activeElement !== barcodeInputRef.current) {
-        barcodeInputRef.current.focus();
-      }
-    };
-
-    focusInput();
-
-    const handleClick = () => {
-      setTimeout(focusInput, 10);
-    };
-
-    const handleKeyDown = () => {
-      setTimeout(focusInput, 10);
-    };
-
-    document.addEventListener('click', handleClick);
-    document.addEventListener('keydown', handleKeyDown);
-
-    const interval = setInterval(focusInput, 1000);
-
-    return () => {
-      document.removeEventListener('click', handleClick);
-      document.removeEventListener('keydown', handleKeyDown);
-      clearInterval(interval);
-    };
-  }, []);
-
-  const addToCartByBarcode = async (barcode: string) => {
-    try {
-      if (inventoryMode === 'quantity') {
-        toast.error('Barcode scanning is not available in quantity-based inventory mode. Please add items manually from the products panel.');
-        return;
-      }
-
-      if (!barcode || !barcode.trim()) {
-        toast.error('Please enter a valid barcode to continue.');
-        return;
-      }
-
-      if (!inventory || !Array.isArray(inventory) || !products || !Array.isArray(products)) {
-        toast.error('System is still loading data. Please wait a moment and try again.');
-        return;
-      }
-
-      const inventoryItem = inventory.find((item) => item.barcode === barcode.trim());
-      if (!inventoryItem) {
-        toast.error(`No product found with barcode "${barcode}". Please verify the barcode is correct.`);
-        return;
-      }
-
-      const product = products.find((p) => p.id === inventoryItem.productId);
-      if (!product) {
-        toast.error(`Product details missing for barcode "${barcode}". Please contact support.`);
-        return;
-      }
-
-
-      if (!inventoryItem.productId || inventoryItem.sellingPrice < 0) {
-        toast.error(`Invalid inventory data for "${product.name}". Please contact support.`);
-        return;
-      }
-    let updatedCart: Order | undefined;
-    setCart((prev) => {
-      const cart = prev || {
-        id: `cart-${Date.now()}`,
-        orderId: `#cart-${Date.now()}`,
-        status: 'cart',
-        customerName: '',
-        customerPhone: '',
-        items: [],
-        discount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-
-      const existingItem = cart.items.find((item) => item.barcode === barcode);
-      if (existingItem) {
-        toast.error(`This item is already in your cart. You can modify quantity from the cart panel.`);
-        return prev;
-      }
-
-
-      updatedCart = {
-        ...cart,
-        items: [
-          ...cart.items,
-          {
-            productId: inventoryItem.productId,
-            barcode: barcode,
-            discount: 0,
-            quantity: 1,
-          },
-        ],
-        updatedAt: new Date().toISOString(),
-      };
-
-      return updatedCart;
-    });
-
-
-    if (updatedCart) {
-      try {
-        const existingCart = await window.api.db.get('orders').then(orders => 
-          orders?.find((o: Order) => o.id === updatedCart!.id)
-        );
-        
-        if (existingCart) {
-          await window.api.db.update('orders', updatedCart.id, updatedCart);
-        } else {
-          await window.api.db.create('orders', updatedCart);
-        }
-        mutate('orders');
-      } catch (error) {
-        logger.error('Failed to save cart to database', 'cart-save', error);
-      }
-    }
-
-    toast.success(`✓ "${product.name}" added to cart via barcode scanner!`);
-    } catch (error) {
-      logger.error('Failed to add item to cart by barcode', 'cart-add-barcode', { barcode, error });
-      toast.error('Unable to add item to cart. Please try again or contact support if the issue persists.');
-    }
-  };
-
-  const handleBarcodeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const currentTime = Date.now();
-
-    if (currentTime - lastInputTime > 100) {
-      setBarcodeBuffer(value);
-    } else {
-      setBarcodeBuffer((prev) => prev + value);
-    }
-
-    setLastInputTime(currentTime);
-
-    e.target.value = '';
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const trimmedBarcode = barcodeBuffer.trim();
-      if (trimmedBarcode && trimmedBarcode.length >= 3) {
-        addToCartByBarcode(trimmedBarcode);
-      }
-      setBarcodeBuffer('');
-    }
-  };
-
-  useEffect(() => {
-    if (barcodeBuffer.length > 0) {
-      const timer = setTimeout(() => {
-        const trimmedBarcode = barcodeBuffer.trim();
-        if (trimmedBarcode && trimmedBarcode.length >= 3) {
-          addToCartByBarcode(trimmedBarcode);
-          setBarcodeBuffer('');
-        } else if (trimmedBarcode) {
-          setBarcodeBuffer('');
-        }
-      }, 300);
-
-      return () => clearTimeout(timer);
-    }
-  }, [barcodeBuffer]);
-
-  return (
-    <input
-      ref={barcodeInputRef}
-      type="text"
-      onChange={handleBarcodeInput}
-      onKeyDown={handleKeyDown}
-      style={{
-        position: 'absolute',
-        left: '-9999px',
-        top: '-9999px',
-        opacity: 0,
-        pointerEvents: 'none',
-      }}
-      tabIndex={-1}
-      autoComplete="off"
-      aria-hidden="true"
-    />
-  );
-}
 
 function ShopHeader() {
   const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
