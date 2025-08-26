@@ -1,8 +1,10 @@
-import { api } from '@/convex/_generated/api';
-import { fetchQuery } from 'convex/nextjs';
+'use client';
 
-export default async function AnalyticsPage() {
-  const counts = await fetchQuery(api.payments.paymentsCountPerShop, undefined);
+import { api } from '@/convex/_generated/api';
+import { useQueryWithStatus } from '@/hooks/use-query';
+
+export default function AnalyticsPage() {
+  const { data: counts } = useQueryWithStatus(api.payments.paymentsCountPerShop, undefined);
 
   const entries = Object.entries(counts || {});
 
