@@ -51,6 +51,7 @@ export default function Settings() {
   useEffect(() => {
     if (shop) {
       setFormData({
+        ...formData,
         name: shop.name || '',
         owner: shop.owner || '',
         location: shop.location || '',
@@ -59,7 +60,6 @@ export default function Settings() {
         description: shop.description || '',
         logo: shop.logo || '',
         theme: shop.theme || 'system',
-        inventoryMode: shop.inventoryMode || 'barcode',
       });
     }
   }, [shop]);
@@ -130,8 +130,7 @@ export default function Settings() {
             <CardDescription>Configure your shop information and branding.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label>Shop Logo</Label>
+            <div className="space-y-2 max-w-[300px]">
               <ImageUpload value={formData.logo} onChange={(value) => setFormData((prev) => ({ ...prev, logo: value || '' }))} disabled={isSubmitting} placeholder="Upload your shop logo" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,44 +209,6 @@ export default function Settings() {
                 disabled={isSubmitting}
                 rows={3}
               />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Inventory Management
-            </CardTitle>
-            <CardDescription>Configure how your inventory is tracked and managed.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Inventory Mode</Label>
-              <Select value={formData.inventoryMode} onValueChange={(value: 'barcode' | 'quantity') => setFormData((prev) => ({ ...prev, inventoryMode: value }))} disabled={isSubmitting}>
-                <SelectTrigger className="w-full md:w-[300px]">
-                  <SelectValue placeholder="Select inventory mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="barcode">
-                    <div className="flex flex-col items-start">
-                      <div className="font-medium">Barcode System</div>
-                      <div className="text-sm text-muted-foreground">Track individual items with unique barcodes</div>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="quantity">
-                    <div className="flex flex-col items-start">
-                      <div className="font-medium">Quantity System</div>
-                      <div className="text-sm text-muted-foreground">Track products by quantity count</div>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                {formData.inventoryMode === 'barcode'
-                  ? 'Each item has a unique barcode. Items are added/removed individually by scanning barcodes.'
-                  : 'Products are tracked by quantity. You can add/remove items by specifying quantities.'}
-              </p>
             </div>
           </CardContent>
         </Card>
