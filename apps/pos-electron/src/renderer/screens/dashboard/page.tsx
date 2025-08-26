@@ -8,17 +8,15 @@ import { ShopHeader } from './components/shop-header';
 import { motion } from 'motion/react';
 import { useAtomValue } from 'jotai/react';
 import { useIsMobile } from '@renderer/hooks/use-mobile';
-import useSWR from 'swr';
 
 export default function Dashboard() {
   const isMobile = useIsMobile();
   const cartVisible = useAtomValue(cartVisibilityAtom);
   const orderQueueVisible = useAtomValue(orderQueueVisibilityAtom);
-  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
 
   const width = isMobile ? '100%' : cartVisible ? 'calc(100% - 400px)' : '100%';
   const isAnyPanelInvisible = !cartVisible || !orderQueueVisible;
-  const inventoryMode = shop?.inventoryMode || 'barcode';
+  
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -28,7 +26,7 @@ export default function Dashboard() {
           <motion.div initial={{ width }} animate={{ width }} className="flex flex-col h-full border-r p-4 gap-4">
             <DashboardStats />
             <OrderPanel />
-            <ProductsPanel inventoryMode={inventoryMode} />
+            <ProductsPanel />
           </motion.div>
           <OrderDetails />
         </div>
