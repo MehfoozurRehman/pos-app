@@ -81,7 +81,7 @@ export function ShopsTable() {
         <TableBody>
           {isPending ? (
             <TableRow>
-              <TableCell colSpan={8}>
+              <TableCell colSpan={9}>
                 <div className="flex justify-center items-center h-[200px] w-full">
                   <Loader className="animate-spin" />
                 </div>
