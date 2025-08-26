@@ -9,7 +9,7 @@ class RendererLogger {
         context,
         data,
         timestamp: new Date().toISOString(),
-        source: 'renderer' as const
+        source: 'renderer' as const,
       });
     } catch (error) {
       console.error('Failed to send log to main process:', error);
