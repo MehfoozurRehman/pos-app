@@ -4,8 +4,9 @@ import { useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 import { Order } from 'src/types';
-import { toast } from 'sonner';
 import { logger } from '@renderer/utils/logger';
+import { toast } from 'sonner';
+import useShop from '@/hooks/use-shop';
 
 type EnrichedOrder = Order & {
   total: number;
@@ -22,16 +23,20 @@ type EnrichedOrder = Order & {
 };
 
 export default function OrdersPage() {
-  const { data: orders, error } = useSWR('orders', () => window.api.db.get('orders'));
-  const { data: products } = useSWR('products', () => window.api.db.get('products'));
-  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
-  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+  const { inventoryMode } = useShop();
 
-  const inventoryMode = shop?.inventoryMode || 'barcode';
+  const { data: orders, error } = useSWR('orders', () => window.api.db.get('orders'));
+
+  const { data: products } = useSWR('products', () => window.api.db.get('products'));
+
+  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
 
   const [searchQuery, setSearchQuery] = useState('');
+
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
   const [sortBy, setSortBy] = useState<'date' | 'total' | 'customer' | 'status'>('date');
+
   const [selectedOrder, setSelectedOrder] = useState<EnrichedOrder | null>(null);
 
   const enrichedOrders = useMemo(() => {
@@ -68,9 +73,9 @@ export default function OrdersPage() {
         ...order,
         total,
         itemsCount: order.items.length,
-        productDetails: productDetails.map(pd => ({
+        productDetails: productDetails.map((pd) => ({
           ...pd,
-          barcode: pd.barcode || ''
+          barcode: pd.barcode || '',
         })),
       };
     });
@@ -120,7 +125,6 @@ export default function OrdersPage() {
 
       await window.api.db.update('orders', orderId, { status: newStatus });
 
-      
       if (oldStatus !== newStatus) {
         await handleInventoryStatusChange(currentOrder, oldStatus, newStatus);
       }
@@ -141,27 +145,26 @@ export default function OrdersPage() {
 
       if (newStatus === 'completed' && oldStatus !== 'completed') {
         if (inventoryMode === 'quantity') {
-
           for (const item of order.items) {
             const inventoryItems = inventory.filter((inv) => inv.productId === item.productId);
             let remainingToDeduct = 1;
-            
+
             for (const inventoryItem of inventoryItems) {
               if (remainingToDeduct <= 0) break;
-              
+
               const currentQuantity = inventoryItem.quantity || 1;
               const deductAmount = Math.min(currentQuantity, remainingToDeduct);
               const newQuantity = currentQuantity - deductAmount;
-              
+
               if (newQuantity <= 0) {
                 await window.api.db.delete('inventory', inventoryItem.id);
               } else {
                 await window.api.db.update('inventory', inventoryItem.id, {
                   ...inventoryItem,
-                  quantity: newQuantity
+                  quantity: newQuantity,
                 });
               }
-              
+
               remainingToDeduct -= deductAmount;
             }
           }
@@ -173,24 +176,20 @@ export default function OrdersPage() {
             }
           }
         }
-      }
-
-      else if ((newStatus === 'cancelled' && oldStatus === 'completed') || (oldStatus === 'completed' && newStatus !== 'completed')) {
+      } else if ((newStatus === 'cancelled' && oldStatus === 'completed') || (oldStatus === 'completed' && newStatus !== 'completed')) {
         if (inventoryMode === 'quantity') {
           for (const item of order.items) {
             const existingItems = inventory.filter((inv) => inv.productId === item.productId);
             const productDetails = order.productDetails.find((pd) => pd.productId === item.productId);
-            
+
             if (existingItems.length > 0 && productDetails) {
-  
               const firstItem = existingItems[0];
               const currentQuantity = firstItem.quantity || 1;
               await window.api.db.update('inventory', firstItem.id, {
                 ...firstItem,
-                quantity: currentQuantity + 1
+                quantity: currentQuantity + 1,
               });
             } else if (productDetails) {
-  
               const inventoryData = {
                 productId: item.productId,
                 quantity: 1,
@@ -222,7 +221,6 @@ export default function OrdersPage() {
       }
     } catch (error) {
       logger.error('Error managing inventory during status change', 'inventory-status-change', { orderId: order.id, oldStatus, newStatus, error });
-      
     }
   };
 
