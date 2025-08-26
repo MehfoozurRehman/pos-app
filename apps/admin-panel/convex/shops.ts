@@ -11,7 +11,13 @@ export const getShops = query({
 
     return await Promise.all(
       shops.map(async (shop) => {
-        const logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+        let logoUrl = null as string | null;
+
+        if (shop.logoUrl?.includes('data:image')) {
+          logoUrl = shop.logoUrl;
+        } else {
+          logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+        }
 
         return {
           ...shop,
@@ -31,7 +37,24 @@ export const listShops = query({
 export const getShop = query({
   args: { id: v.id('shops') },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const shop = await ctx.db.get(args.id);
+
+    if (!shop) {
+      throw new Error('Shop not found');
+    }
+
+    let logoUrl = null as string | null;
+
+    if (shop.logoUrl?.includes('data:image')) {
+      logoUrl = shop.logoUrl;
+    } else {
+      logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+    }
+
+    return {
+      ...shop,
+      logoUrl,
+    };
   },
 });
 
@@ -47,7 +70,13 @@ export const getShopByShopId = query({
       throw new Error('Shop not found');
     }
 
-    const logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+    let logoUrl = null as string | null;
+
+    if (shop.logoUrl?.includes('data:image')) {
+      logoUrl = shop.logoUrl;
+    } else {
+      logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+    }
 
     return {
       ...shop,
@@ -117,7 +146,7 @@ export const updateShop = mutation({
     description: v.optional(v.string()),
     theme: v.optional(v.union(v.literal('light'), v.literal('dark'), v.literal('system'))),
     inventoryMode: v.optional(v.union(v.literal('barcode'), v.literal('quantity'))),
-    lastLogin: v.optional(v.string()),
+    loginAt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -166,7 +195,7 @@ export const authenticateShop = mutation({
     }
 
     await ctx.db.patch(shop._id, {
-      lastLogin: new Date().toISOString(),
+      loginAt: new Date().toISOString(),
     });
 
     return {
