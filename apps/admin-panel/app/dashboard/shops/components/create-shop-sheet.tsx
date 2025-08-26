@@ -2,7 +2,7 @@
 
 import * as z from 'zod';
 
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
@@ -31,7 +31,6 @@ const createShopSchema = z.object({
   description: z.string().optional(),
   theme: z.enum(['light', 'dark', 'system']).optional(),
   inventoryMode: z.enum(['barcode', 'quantity']).optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(100, 'Password must be less than 100 characters'),
 });
 
 type CreateShopForm = z.infer<typeof createShopSchema>;
@@ -59,7 +58,6 @@ export function CreateShopSheet({ children }: CreateShopSheetProps) {
       description: '',
       theme: 'light',
       inventoryMode: 'barcode',
-      password: '',
     },
   });
 
@@ -95,7 +93,6 @@ export function CreateShopSheet({ children }: CreateShopSheetProps) {
         name: cleanData.name,
         owner: cleanData.owner,
         location: cleanData.location,
-        password: cleanData.password,
         logo: logoUrl || undefined,
         logoUrl: data.logoDataUrl || undefined,
         phone: cleanData.phone,
@@ -115,13 +112,13 @@ export function CreateShopSheet({ children }: CreateShopSheetProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+      <SheetContent className="w-[400px] sm:w-[540px] h-full overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Create New Shop</SheetTitle>
           <SheetDescription>Add a new shop to your POS system. A unique shop ID will be automatically generated for Electron app authentication.</SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6 px-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-6 px-4 h-full flex flex-col">
             <FormField
               control={form.control}
               name="name"
@@ -230,7 +227,7 @@ export function CreateShopSheet({ children }: CreateShopSheetProps) {
                     <FormLabel>Theme</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select theme" />
                         </SelectTrigger>
                       </FormControl>
@@ -252,7 +249,7 @@ export function CreateShopSheet({ children }: CreateShopSheetProps) {
                     <FormLabel>Inventory Mode</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select mode" />
                         </SelectTrigger>
                       </FormControl>
@@ -266,21 +263,7 @@ export function CreateShopSheet({ children }: CreateShopSheetProps) {
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password *</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Enter secure password" {...field} />
-                  </FormControl>
-                  <FormDescription>This password will be used for Electron app authentication.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end space-x-2 pt-4">
+            <div className="flex justify-end space-x-2 pt-4 mt-auto">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
