@@ -3,15 +3,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { IconDotsVertical, IconLogout } from '@tabler/icons-react';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 
+import { useNavigate } from 'react-router';
 import useShop from '@/hooks/use-shop';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
 
   const shop = useShop();
 
   const logout = () => {
-    // window.api.db.update()
+    window.api.db.update('shop', {
+      shopId: '',
+    });
+    navigate('/');
   };
 
   return (
