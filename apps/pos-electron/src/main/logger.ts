@@ -13,7 +13,7 @@ class Logger {
     this.dbInstance = db;
     this.processQueue();
     this.startPeriodicCleanup();
-    this.cleanup().catch(error => {
+    this.cleanup().catch((error) => {
       console.error('Initial log cleanup failed:', error);
     });
   }
@@ -53,7 +53,7 @@ class Logger {
       context,
       data,
       timestamp: new Date().toISOString(),
-      source: 'main'
+      source: 'main',
     };
 
     this.logQueue.push(log);
@@ -82,17 +82,15 @@ class Logger {
     try {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-      
+
       if (!this.dbInstance.data.logs) {
         this.dbInstance.data.logs = [];
         return;
       }
 
       const initialCount = this.dbInstance.data.logs.length;
-      this.dbInstance.data.logs = this.dbInstance.data.logs.filter(
-        (log: Log) => new Date(log.timestamp) > cutoffDate
-      );
-      
+      this.dbInstance.data.logs = this.dbInstance.data.logs.filter((log: Log) => new Date(log.timestamp) > cutoffDate);
+
       const removedCount = initialCount - this.dbInstance.data.logs.length;
       if (removedCount > 0) {
         await this.dbInstance.write();
@@ -104,11 +102,14 @@ class Logger {
   }
 
   private startPeriodicCleanup(): void {
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup().catch(error => {
-        console.error('Periodic log cleanup failed:', error);
-      });
-    }, 24 * 60 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanup().catch((error) => {
+          console.error('Periodic log cleanup failed:', error);
+        });
+      },
+      24 * 60 * 60 * 1000,
+    );
   }
 
   stopPeriodicCleanup(): void {
