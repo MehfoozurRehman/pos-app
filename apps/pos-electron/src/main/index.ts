@@ -89,8 +89,8 @@ function createTray() {
       }
     });
   } catch (err) {
-      logger.error('Failed to create system tray', 'tray-creation', err);
-    }
+    logger.error('Failed to create system tray', 'tray-creation', err);
+  }
 }
 
 app.whenReady().then(async () => {
