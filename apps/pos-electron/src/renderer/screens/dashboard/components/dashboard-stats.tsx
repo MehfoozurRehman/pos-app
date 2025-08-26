@@ -8,16 +8,18 @@ import { logger } from '@renderer/utils/logger';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import useSWR from 'swr';
+import useShop from '@/hooks/use-shop';
 
 export function DashboardStats() {
   const navigate = useNavigate();
 
-  const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
-  const { data: products } = useSWR('products', () => window.api.db.get('products'));
-  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
-  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+  const { inventoryMode } = useShop();
 
-  const inventoryMode = shop?.inventoryMode || 'barcode';
+  const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
+
+  const { data: products } = useSWR('products', () => window.api.db.get('products'));
+
+  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
 
   const stats = useMemo(() => {
     if (!orders || !products || !inventory) {
@@ -38,18 +40,18 @@ export function DashboardStats() {
     const totalRevenue = completedOrders.reduce((sum: number, order: Order) => {
       const orderTotal = order.items.reduce((itemSum: number, item) => {
         let inventoryItem;
-        
+
         if (inventoryMode === 'quantity') {
           inventoryItem = inventory.find((inv) => inv.productId === item.productId);
         } else {
           inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
         }
-        
+
         if (!inventoryItem) {
-          logger.warn('Inventory item not found', 'revenue-calculation', { 
-            productId: item.productId, 
-            barcode: item.barcode, 
-            inventoryMode 
+          logger.warn('Inventory item not found', 'revenue-calculation', {
+            productId: item.productId,
+            barcode: item.barcode,
+            inventoryMode,
           });
           return itemSum;
         }
@@ -58,7 +60,7 @@ export function DashboardStats() {
         const discount = item.discount || 0;
         return itemSum + Math.max(0, price - discount);
       }, 0);
-      
+
       const orderDiscount = order.discount || 0;
       return sum + Math.max(0, orderTotal - orderDiscount);
     }, 0);
@@ -68,8 +70,8 @@ export function DashboardStats() {
       const currentCount = productStockCounts.get(inv.productId) || 0;
       productStockCounts.set(inv.productId, currentCount + 1);
     });
-    
-    const lowStockItems = Array.from(productStockCounts.values()).filter(count => count < 5).length;
+
+    const lowStockItems = Array.from(productStockCounts.values()).filter((count) => count < 5).length;
 
     return {
       totalRevenue,
@@ -94,7 +96,6 @@ export function DashboardStats() {
           </div>
         </div>
       </Card>
-
       <Card className="p-3 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-green-500 rounded-lg">
@@ -106,7 +107,6 @@ export function DashboardStats() {
           </div>
         </div>
       </Card>
-
       <Card className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-purple-500 rounded-lg">
@@ -118,7 +118,6 @@ export function DashboardStats() {
           </div>
         </div>
       </Card>
-
       <Card className="p-3 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-orange-500 rounded-lg">
@@ -130,7 +129,6 @@ export function DashboardStats() {
           </div>
         </div>
       </Card>
-
       <Card className="p-3 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900 border-teal-200 dark:border-teal-800">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-teal-500 rounded-lg">
@@ -142,7 +140,6 @@ export function DashboardStats() {
           </div>
         </div>
       </Card>
-
       <Card className="p-3 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-red-500 rounded-lg">
