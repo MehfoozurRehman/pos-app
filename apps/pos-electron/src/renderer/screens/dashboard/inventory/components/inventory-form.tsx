@@ -144,9 +144,7 @@ export function InventoryForm({ isOpen, onOpenChange, editingInventory, onSubmit
                 </Select>
               </div>
 
-              {inventoryMode === 'barcode' && (
-                <BarcodeInput value={barcodeInput} onChange={handleBarcodeChange} disabled={isSubmitting} label="Barcode" required placeholder="Enter or scan barcode" />
-              )}
+              {inventoryMode === 'barcode' && <BarcodeInput value={barcodeInput} onChange={handleBarcodeChange} disabled={isSubmitting} label="Barcode" required placeholder="Enter or scan barcode" />}
 
               {inventoryMode === 'quantity' && (
                 <div className="space-y-2">
