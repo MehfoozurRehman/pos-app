@@ -1,9 +1,10 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
 
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
+  - bcrypt
   - core-js-pure
   - electron
   - electron-winstaller
