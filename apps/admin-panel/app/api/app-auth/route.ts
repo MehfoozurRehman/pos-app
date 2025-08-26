@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { api } from '@/convex/_generated/api';
 import { fetchMutation } from 'convex/nextjs';
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200 });
+}
+
 export async function POST(request: Request) {
   try {
     const { shopId, password } = await request.json();
