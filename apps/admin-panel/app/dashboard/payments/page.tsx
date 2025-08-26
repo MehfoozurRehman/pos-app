@@ -1,8 +1,10 @@
-import { api } from '@/convex/_generated/api';
-import { fetchQuery } from 'convex/nextjs';
+'use client';
 
-export default async function PaymentsPage() {
-  const payments = await fetchQuery(api.payments.listPayments, undefined);
+import { api } from '@/convex/_generated/api';
+import { useQueryWithStatus } from '@/hooks/use-query';
+
+export default function PaymentsPage() {
+  const { data: payments = [] } = useQueryWithStatus(api.payments.listPayments, undefined);
 
   return (
     <div className="p-6">
