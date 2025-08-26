@@ -1,10 +1,26 @@
+import { Navigate, Outlet } from 'react-router';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 import { AppSidebar } from '@/components/app-sidebar';
 import { Header } from '@renderer/components/header';
-import { Outlet } from 'react-router';
+import { Loader } from 'lucide-react';
+import useShop from '@/hooks/use-shop';
 
 export default function Layout() {
+  const shop = useShop();
+
+  if (shop.isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full w-full">
+        <Loader className="animate-spin" />
+      </div>
+    );
+  }
+
+  if (!shop.shopId) {
+    return <Navigate to="/" />;
+  }
+
   return (
     <SidebarProvider
       style={
