@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Check, Clock, Copy, CreditCard, Edit, Mail, MapPin, Phone, Settings } from 'lucide-react';
+import { ArrowLeft, Check, Clock, Copy, CreditCard, Mail, MapPin, Phone, Settings } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { use, useState } from 'react';
@@ -8,6 +8,7 @@ import { use, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Id } from '@/convex/_generated/dataModel';
+import Image from 'next/image';
 import Link from 'next/link';
 import { api } from '@/convex/_generated/api';
 import { formatDistanceToNow } from 'date-fns';
@@ -108,7 +109,7 @@ export function ShopDetailsView({ searchParams }: ShopDetailsViewProps) {
           <div className="flex items-start space-x-6">
             <div className="h-20 w-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
               {shop.logo ? (
-                <img src={shop.logoUrl} alt={shop.name} className="h-full w-full object-cover" />
+                <Image width={200} height={200} src={shop.logoUrl || ''} alt={shop.name} className="h-full w-full object-cover" />
               ) : (
                 <span className="text-2xl font-bold text-muted-foreground">{shop.name.charAt(0).toUpperCase()}</span>
               )}
