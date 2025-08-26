@@ -192,18 +192,24 @@ export const dbModule = async () => {
   ipcMain.handle('db:update', async (_event, key: keyof DBSchema, id: string, patch: any) => {
     try {
       validateKey(key);
-      if (!id) throw new Error('Missing id for update');
+      
+      // For shop table, ID is optional since there's only one shop
+      if (key !== 'shop' && !id) throw new Error('Missing id for update');
       if (!patch || typeof patch !== 'object') throw new Error('Invalid patch for update');
 
       if (key === ('shop' as keyof DBSchema)) {
         const before = db.data.shop ? { ...(db.data.shop as any) } : null;
-        if (!before) return null;
-        db.data.shop = { ...(db.data.shop as any), ...patch } as any;
+        // If no existing shop data, create new shop entry
+        if (!before) {
+          db.data.shop = { ...patch } as any;
+        } else {
+          db.data.shop = { ...(db.data.shop as any), ...patch } as any;
+        }
         const after = db.data.shop as any;
         db.data.changes.push({
           id: genId('chg_'),
           table: String(key),
-          action: 'update',
+          action: before ? 'update' : 'create',
           itemId: after.id || after.shopId || '',
           timestamp: new Date().toISOString(),
           data: { before, after, patch },
