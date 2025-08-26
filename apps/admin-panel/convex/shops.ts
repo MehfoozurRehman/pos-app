@@ -97,7 +97,6 @@ export const createShop = mutation({
     description: v.optional(v.string()),
     theme: v.optional(v.union(v.literal('light'), v.literal('dark'), v.literal('system'))),
     inventoryMode: v.optional(v.union(v.literal('barcode'), v.literal('quantity'))),
-    password: v.string(),
   },
   handler: async (ctx, args) => {
     let shopId: string;
@@ -121,7 +120,7 @@ export const createShop = mutation({
       }
     }
 
-    const hashedPassword = await hashPassword(args.password);
+    const hashedPassword = await hashPassword(shopId!.split('-')[1]);
 
     return await ctx.db.insert('shops', {
       ...args,
@@ -194,6 +193,14 @@ export const authenticateShop = mutation({
       throw new Error('Invalid Password');
     }
 
+    let logoUrl = null as string | null;
+
+    if (shop.logoUrl?.includes('data:image')) {
+      logoUrl = shop.logoUrl;
+    } else {
+      logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+    }
+
     await ctx.db.patch(shop._id, {
       loginAt: new Date().toISOString(),
     });
@@ -203,7 +210,7 @@ export const authenticateShop = mutation({
       shopId: shop.shopId,
       name: shop.name,
       owner: shop.owner,
-      logo: shop.logo,
+      logo: shop.logoUrl,
       location: shop.location,
       phone: shop.phone,
       email: shop.email,
