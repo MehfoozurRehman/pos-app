@@ -1,11 +1,24 @@
+import { hashPassword, verifyPassword } from '@/utils/encryption';
 import { mutation, query } from './_generated/server';
 
+import { Id } from './_generated/dataModel';
 import { v } from 'convex/values';
 
 export const getShops = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query('shops').collect();
+    const shops = await ctx.db.query('shops').collect();
+
+    return await Promise.all(
+      shops.map(async (shop) => {
+        const logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+
+        return {
+          ...shop,
+          logoUrl,
+        };
+      }),
+    );
   },
 });
 
@@ -25,10 +38,21 @@ export const getShop = query({
 export const getShopByShopId = query({
   args: { shopId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const shop = await ctx.db
       .query('shops')
       .filter((q) => q.eq(q.field('shopId'), args.shopId))
       .first();
+
+    if (!shop) {
+      throw new Error('Shop not found');
+    }
+
+    const logoUrl = await ctx.storage.getUrl(shop.logoUrl as Id<'_storage'>);
+
+    return {
+      ...shop,
+      logoUrl,
+    };
   },
 });
 
@@ -36,7 +60,8 @@ export const createShop = mutation({
   args: {
     owner: v.string(),
     name: v.string(),
-    logo: v.string(),
+    logo: v.optional(v.id('_storage')),
+    logoUrl: v.optional(v.string()),
     location: v.string(),
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
@@ -67,9 +92,12 @@ export const createShop = mutation({
       }
     }
 
+    const hashedPassword = await hashPassword(args.password);
+
     return await ctx.db.insert('shops', {
       ...args,
       shopId: shopId!,
+      password: hashedPassword,
       createdAt: new Date().toISOString(),
     });
   },
@@ -81,14 +109,14 @@ export const updateShop = mutation({
     shopId: v.optional(v.string()),
     owner: v.optional(v.string()),
     name: v.optional(v.string()),
-    logo: v.optional(v.string()),
+    logo: v.optional(v.id('_storage')),
+    logoUrl: v.optional(v.string()),
     location: v.optional(v.string()),
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
     description: v.optional(v.string()),
     theme: v.optional(v.union(v.literal('light'), v.literal('dark'), v.literal('system'))),
     inventoryMode: v.optional(v.union(v.literal('barcode'), v.literal('quantity'))),
-    password: v.optional(v.string()),
     lastLogin: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -131,8 +159,10 @@ export const authenticateShop = mutation({
       throw new Error('Shop not found');
     }
 
-    if (shop.password !== args.password) {
-      throw new Error('Invalid password');
+    const isValidPassword = await verifyPassword(args.password, shop.password);
+
+    if (!isValidPassword) {
+      throw new Error('Invalid Password');
     }
 
     await ctx.db.patch(shop._id, {
