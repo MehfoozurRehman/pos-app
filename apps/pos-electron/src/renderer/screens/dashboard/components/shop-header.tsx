@@ -5,9 +5,11 @@ import { Order } from 'src/types';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import useSWR from 'swr';
+import useShop from '@/hooks/use-shop';
 
 export function ShopHeader() {
-  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+  const shop = useShop();
+
   const { data: orders } = useSWR('orders', () => window.api.db.get('orders'));
 
   const todayOrders = useMemo(() => {
