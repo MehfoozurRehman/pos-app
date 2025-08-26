@@ -1,7 +1,7 @@
 import { mutation, query } from './_generated/server';
+
 import { v } from 'convex/values';
 
-// Generate upload URL for file uploads
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
@@ -9,7 +9,6 @@ export const generateUploadUrl = mutation({
   },
 });
 
-// Store file reference after upload
 export const saveFileReference = mutation({
   args: {
     storageId: v.id('_storage'),
@@ -28,7 +27,6 @@ export const saveFileReference = mutation({
   },
 });
 
-// Get file URL from storage ID
 export const getFileUrl = query({
   args: { storageId: v.id('_storage') },
   handler: async (ctx, args) => {
@@ -36,7 +34,6 @@ export const getFileUrl = query({
   },
 });
 
-// Delete file from storage
 export const deleteFile = mutation({
   args: { storageId: v.id('_storage') },
   handler: async (ctx, args) => {
