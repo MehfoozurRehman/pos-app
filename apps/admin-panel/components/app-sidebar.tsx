@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { IconDashboard, IconInnerShadowTop, IconListDetails } from '@tabler/icons-react';
+import { IconChartBar, IconCreditCard, IconDashboard, IconInnerShadowTop, IconListDetails } from '@tabler/icons-react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 
 import Link from 'next/link';
@@ -25,6 +25,16 @@ const data = {
       title: 'Shops',
       url: '/dashboard/shops',
       icon: IconListDetails,
+    },
+    {
+      title: 'Analytics',
+      url: '/dashboard/analytics',
+      icon: IconChartBar,
+    },
+    {
+      title: 'Payments',
+      url: '/dashboard/payments',
+      icon: IconCreditCard,
     },
   ],
 };
