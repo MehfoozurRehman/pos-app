@@ -8,6 +8,13 @@ export default defineSchema({
     email: v.string(),
     password: v.string(),
   }).index('by_email', ['email']),
+  files: defineTable({
+    storageId: v.id('_storage'),
+    filename: v.string(),
+    contentType: v.string(),
+    size: v.number(),
+    uploadedAt: v.string(),
+  }),
   notes: defineTable({
     shop: v.id('shops'),
     title: v.string(),
@@ -18,7 +25,8 @@ export default defineSchema({
     shopId: v.string(),
     owner: v.string(),
     name: v.string(),
-    logo: v.string(),
+    logo: v.optional(v.id('_storage')),
+    logoUrl: v.optional(v.string()),
     location: v.string(),
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
