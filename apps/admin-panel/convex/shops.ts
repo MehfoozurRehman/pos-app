@@ -172,6 +172,30 @@ export const deleteShop = mutation({
   },
 });
 
+export const logout = mutation({
+  args: {
+    shopId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const shop = await ctx.db
+      .query('shops')
+      .filter((q) => q.eq(q.field('shopId'), args.shopId))
+      .first();
+
+    if (!shop) {
+      throw new Error('Shop not found');
+    }
+
+    await ctx.db.patch(shop._id, {
+      loginAt: undefined,
+    });
+
+    return {
+      message: 'Shop logged out successfully',
+    };
+  },
+});
+
 export const authenticateShop = mutation({
   args: {
     shopId: v.string(),
