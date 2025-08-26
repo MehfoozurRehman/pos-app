@@ -16,7 +16,6 @@ export default function Dashboard() {
 
   const width = isMobile ? '100%' : cartVisible ? 'calc(100% - 400px)' : '100%';
   const isAnyPanelInvisible = !cartVisible || !orderQueueVisible;
-  
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -34,6 +33,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-
-
