@@ -82,7 +82,7 @@ function OrderQueue() {
 
 function OrderCard({ order }: { order: Order }) {
   const [, setSelectedOrder] = useAtom(cartAtom);
-  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'cart':
@@ -119,13 +119,7 @@ function OrderCard({ order }: { order: Order }) {
         <div className="flex items-center gap-2">
           {getStatusBadge(order.status || 'draft')}
           {canDelete && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleDeleteOrder}
-              className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-              title="Delete order"
-            >
+            <Button size="sm" variant="ghost" onClick={handleDeleteOrder} className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10" title="Delete order">
               <X className="w-3 h-3" />
             </Button>
           )}
