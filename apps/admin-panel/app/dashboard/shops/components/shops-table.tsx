@@ -33,10 +33,10 @@ export function ShopsTable() {
     }
   };
 
-  const formatLastLogin = (lastLogin?: string) => {
-    if (!lastLogin) return 'Never';
+  const formatloginAt = (loginAt?: string) => {
+    if (!loginAt) return 'Never';
     try {
-      return formatDistanceToNow(new Date(lastLogin), { addSuffix: true });
+      return formatDistanceToNow(new Date(loginAt), { addSuffix: true });
     } catch {
       return 'Invalid date';
     }
@@ -120,7 +120,7 @@ export function ShopsTable() {
                 <TableCell>{shop.theme ? <Badge variant={getThemeBadgeVariant(shop.theme)}>{shop.theme}</Badge> : <span className="text-muted-foreground">-</span>}</TableCell>
                 <TableCell>{shop.inventoryMode ? <Badge variant="outline">{shop.inventoryMode}</Badge> : <span className="text-muted-foreground">-</span>}</TableCell>
                 <TableCell>
-                  <span className="text-sm">{formatLastLogin(shop.lastLogin)}</span>
+                  <span className="text-sm">{formatloginAt(shop.loginAt)}</span>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
