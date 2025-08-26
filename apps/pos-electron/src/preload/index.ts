@@ -18,8 +18,20 @@ const api = {
     create: async (table: string, item: any) => {
       return await ipcRenderer.invoke('db:create', table, item);
     },
-    update: async (table: string, id: string, patch: any) => {
-      return await ipcRenderer.invoke('db:update', table, id, patch);
+    update: async (table: string, ...args: any[]) => {
+      // For shop table, ID is optional
+      if (table === 'shop') {
+        if (args.length === 1) {
+          // Called with just patch: update('shop', patch)
+          return await ipcRenderer.invoke('db:update', table, null, args[0]);
+        } else {
+          // Called with id and patch: update('shop', id, patch)
+          return await ipcRenderer.invoke('db:update', table, args[0], args[1]);
+        }
+      } else {
+        // For other tables, ID is required
+        return await ipcRenderer.invoke('db:update', table, args[0], args[1]);
+      }
     },
     delete: async (table: string, id: string) => {
       return await ipcRenderer.invoke('db:delete', table, id);
