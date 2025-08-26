@@ -34,7 +34,7 @@ export default defineSchema({
     theme: v.optional(v.union(v.literal('light'), v.literal('dark'), v.literal('system'))),
     inventoryMode: v.optional(v.union(v.literal('barcode'), v.literal('quantity'))),
     password: v.string(),
-    lastLogin: v.optional(v.string()),
+    loginAt: v.optional(v.string()),
     createdAt: v.optional(v.string()),
   }),
   payments: defineTable({
