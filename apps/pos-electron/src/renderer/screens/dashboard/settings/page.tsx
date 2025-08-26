@@ -2,8 +2,6 @@ import { Building2, Mail, MapPin, Moon, Package, Palette, Phone, Save, Store, Su
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@renderer/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/components/ui/select';
 import { useEffect, useState } from 'react';
-import useSWR, { mutate } from 'swr';
-import { logger } from '@renderer/utils/logger';
 
 import { Button } from '@renderer/components/ui/button';
 import { ImageUpload } from '@renderer/components/ui/image-upload';
@@ -11,7 +9,10 @@ import { Input } from '@renderer/components/ui/input';
 import { Label } from '@renderer/components/ui/label';
 import { Separator } from '@renderer/components/ui/separator';
 import { Textarea } from '@renderer/components/ui/textarea';
+import { logger } from '@renderer/utils/logger';
+import { mutate } from 'swr';
 import { toast } from 'sonner';
+import useShop from '@/hooks/use-shop';
 import { useTheme } from '@renderer/components/theme-provider';
 
 type ShopFormData = {
@@ -39,9 +40,12 @@ const initialFormData: ShopFormData = {
 };
 
 export default function Settings() {
+  const shop = useShop();
+
   const [formData, setFormData] = useState<ShopFormData>(initialFormData);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
+
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -88,7 +92,7 @@ export default function Settings() {
         description: formData.description.trim(),
       };
 
-      if (shop) {
+      if (shop && shop.id) {
         await window.api.db.update('shop', shop.id, shopData);
       } else {
         await window.api.db.create('shop', {
@@ -220,11 +224,7 @@ export default function Settings() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Inventory Mode</Label>
-              <Select 
-                value={formData.inventoryMode} 
-                onValueChange={(value: 'barcode' | 'quantity') => setFormData((prev) => ({ ...prev, inventoryMode: value }))}
-                disabled={isSubmitting}
-              >
+              <Select value={formData.inventoryMode} onValueChange={(value: 'barcode' | 'quantity') => setFormData((prev) => ({ ...prev, inventoryMode: value }))} disabled={isSubmitting}>
                 <SelectTrigger className="w-full md:w-[300px]">
                   <SelectValue placeholder="Select inventory mode" />
                 </SelectTrigger>
@@ -244,10 +244,9 @@ export default function Settings() {
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground">
-                {formData.inventoryMode === 'barcode' 
+                {formData.inventoryMode === 'barcode'
                   ? 'Each item has a unique barcode. Items are added/removed individually by scanning barcodes.'
-                  : 'Products are tracked by quantity. You can add/remove items by specifying quantities.'
-                }
+                  : 'Products are tracked by quantity. You can add/remove items by specifying quantities.'}
               </p>
             </div>
           </CardContent>
