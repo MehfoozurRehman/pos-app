@@ -11,19 +11,26 @@ import { logger } from '@renderer/utils/logger';
 import { toast } from 'sonner';
 import { useAtom } from 'jotai/react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import useShop from '@/hooks/use-shop';
 
 export function OrderDetails() {
   const isMobile = useIsMobile();
-  const [cart, setCart] = useAtom(cartAtom);
-  const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [isSavingDraft, setIsSavingDraft] = useState(false);
-  const [isClearingCart, setIsClearingCart] = useState(false);
-  const { data: products } = useSWR('products', () => window.api.db.get('products'));
-  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
-  const { data: shop } = useSWR('shop', () => window.api.db.get('shop'));
 
-  const inventoryMode = shop?.inventoryMode || 'barcode';
+  const { inventoryMode } = useShop();
+
+  const [cart, setCart] = useAtom(cartAtom);
+
+  const [cartVisible, setCartVisible] = useAtom(cartVisibilityAtom);
+
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+
+  const [isClearingCart, setIsClearingCart] = useState(false);
+
+  const { data: products } = useSWR('products', () => window.api.db.get('products'));
+
+  const { data: inventory } = useSWR('inventory', () => window.api.db.get('inventory'));
 
   useEffect(() => {
     if (isMobile) {
@@ -39,20 +46,18 @@ export function OrderDetails() {
     return cart.items.map((item, index) => {
       const product = products.find((p) => p.id === item.productId);
       let inventoryItem;
-      
+
       if (inventoryMode === 'quantity') {
-        
         inventoryItem = inventory.find((inv) => inv.productId === item.productId);
       } else {
-        
         inventoryItem = inventory.find((inv) => inv.barcode === item.barcode);
       }
 
       if (!inventoryItem) {
-        logger.warn('Inventory item not found in cart total calculation', 'cart-total', { 
-          productId: item.productId, 
-          barcode: item.barcode, 
-          inventoryMode 
+        logger.warn('Inventory item not found in cart total calculation', 'cart-total', {
+          productId: item.productId,
+          barcode: item.barcode,
+          inventoryMode,
         });
       }
 
@@ -78,11 +83,10 @@ export function OrderDetails() {
 
   const handleClearCart = async () => {
     if (!confirm('Are you sure you want to clear the cart?')) return;
-    
+
     try {
       setIsClearingCart(true);
       if (cart && cart.id && cart.status === 'cart') {
-
         await window.api.db.delete('orders', cart.id);
         mutate('orders');
       }
@@ -112,10 +116,9 @@ export function OrderDetails() {
 
   const handleUpdateCustomer = (field: 'customerName' | 'customerPhone', value: string) => {
     if (!cart) return;
-    
 
     let validatedValue = value;
-    
+
     if (field === 'customerPhone' && value) {
       const phoneRegex = /^[\d\s\-\+\(\)]+$/;
       if (!phoneRegex.test(value)) {
@@ -123,7 +126,7 @@ export function OrderDetails() {
         return;
       }
     }
-    
+
     if (field === 'customerName') {
       validatedValue = value.trim();
       if (validatedValue.length > 100) {
@@ -131,7 +134,7 @@ export function OrderDetails() {
         return;
       }
     }
-    
+
     setCart({ ...cart, [field]: validatedValue });
   };
 
@@ -142,14 +145,13 @@ export function OrderDetails() {
         return;
       }
 
-
-      if (!cart.items.every(item => item.barcode && item.quantity > 0)) {
+      if (!cart.items.every((item) => item.barcode && item.quantity > 0)) {
         toast.error('Some items in your cart are invalid. Please remove them and try again.');
         return;
       }
 
       setIsSavingDraft(true);
-      
+
       const orderData = {
         ...cart,
         id: cart.id || `draft-${Date.now()}`,
@@ -158,13 +160,12 @@ export function OrderDetails() {
         updatedAt: new Date().toISOString(),
       };
 
-
       if (cart.id && cart.status === 'cart') {
         await window.api.db.update('orders', cart.id, orderData);
       } else {
         await window.api.db.create('orders', orderData);
       }
-      
+
       setCart(null);
       mutate('orders');
       toast.success('✓ Order saved as draft! You can find it in the Orders section.');
@@ -183,12 +184,10 @@ export function OrderDetails() {
         return;
       }
 
-
-      if (!cart.items.every(item => item.barcode && item.quantity > 0)) {
+      if (!cart.items.every((item) => item.barcode && item.quantity > 0)) {
         toast.error('Some items in your cart are invalid. Please remove them and try again.');
         return;
       }
-
 
       if (!cart.customerName?.trim()) {
         toast.error('Please enter customer name before proceeding with checkout.');
@@ -196,7 +195,7 @@ export function OrderDetails() {
       }
 
       setIsCheckingOut(true);
-      
+
       const orderData = {
         ...cart,
         id: cart.id || `order-${Date.now()}`,
@@ -204,7 +203,6 @@ export function OrderDetails() {
         createdAt: cart.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-
 
       if (cart.id && cart.status === 'cart') {
         await window.api.db.update('orders', cart.id, orderData);
@@ -325,29 +323,14 @@ export function OrderDetails() {
 
                 <div className="space-y-2">
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={handleSaveDraft} 
-                      className="flex-1"
-                      disabled={isSavingDraft || isCheckingOut || isClearingCart}
-                    >
+                    <Button variant="outline" onClick={handleSaveDraft} className="flex-1" disabled={isSavingDraft || isCheckingOut || isClearingCart}>
                       {isSavingDraft ? 'Saving...' : 'Save Draft'}
                     </Button>
-                    <Button 
-                      variant="default" 
-                      onClick={handleCheckout} 
-                      className="flex-1"
-                      disabled={isCheckingOut || isSavingDraft || isClearingCart}
-                    >
+                    <Button variant="default" onClick={handleCheckout} className="flex-1" disabled={isCheckingOut || isSavingDraft || isClearingCart}>
                       {isCheckingOut ? 'Processing...' : 'Checkout'}
                     </Button>
                   </div>
-                  <Button 
-                    variant="destructive" 
-                    onClick={handleClearCart} 
-                    className="w-full"
-                    disabled={isClearingCart || isCheckingOut || isSavingDraft}
-                  >
+                  <Button variant="destructive" onClick={handleClearCart} className="w-full" disabled={isClearingCart || isCheckingOut || isSavingDraft}>
                     {isClearingCart ? 'Clearing...' : 'Clear Cart'}
                   </Button>
                 </div>
