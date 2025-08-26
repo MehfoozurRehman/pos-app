@@ -309,8 +309,8 @@ export function ShopDetailsView({ searchParams }: ShopDetailsViewProps) {
                     <div className="text-sm text-muted-foreground">Used for Electron app authentication</div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <code className="text-sm bg-muted px-2 py-1 rounded font-mono">{'•'.repeat(shop.password.length)}</code>
-                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(shop.password, 'Password')}>
+                    <code className="text-sm bg-muted px-2 py-1 rounded font-mono">{'•'.repeat(shop.shopId.split('-')[1].length)}</code>
+                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(shop.shopId.split('-')[1], 'Password')}>
                       {copiedField === 'Password' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
